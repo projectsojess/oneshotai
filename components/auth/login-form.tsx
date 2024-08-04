@@ -7,7 +7,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { useState } from 'react';
-// import { login } from '@/actions/login';
+import { login } from '@/actions/login';
 import { LoginSchema } from '@/schemas/validation/login-schema';
 import { FormError } from '@/components/auth/form-error';
 import Link from 'next/link';
@@ -28,13 +28,13 @@ export const LoginForm = () => {
   const onSubmit = async (values: z.infer<typeof LoginSchema>) => {
 
     setError(""); 
-    // login(values)
-    //   .then((data) => {
-    //     setError(data && data.error ? data.error : '');
-    //   })
-    //   .catch(() => {
-    //     setError("Something went wrong. Please try again later")
-    //   })
+    login(values)
+      .then((data) => {
+        setError(data && data.error ? data.error : '');
+      })
+      .catch(() => {
+        setError("Something went wrong. Please try again later")
+      })
   }
 
   return (
