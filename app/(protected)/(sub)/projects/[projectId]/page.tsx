@@ -26,7 +26,7 @@ const ProjectPage = ({params} : {params : {projectId: string}}) => {
       },[])
     return (
         <div>
-
+          
         </div>
     )
 }
