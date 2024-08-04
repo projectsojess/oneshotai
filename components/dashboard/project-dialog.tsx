@@ -15,10 +15,11 @@ import { Plus } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { INTERNAL_SERVER_ERROR_MESSAGE } from '@/constants/error-messages';
 import axios from 'axios';
+import { useRouter } from 'next/navigation';
 
 const ProjectDialog = () => {
   const [isOpen, setIsOpen] = useState(false);
-
+  const router = useRouter();
   const form = useForm<z.infer<typeof NewProjectSchema>>({
     resolver: zodResolver(NewProjectSchema),
     defaultValues: {
@@ -36,7 +37,7 @@ const ProjectDialog = () => {
       const resp = await axios.post("/api/projects", {
         values: values
       });
-      toast.success(resp.data.message);
+      router.push(`/projects/${resp.data.projectId}`);
     } catch (error) {
       
       toast.error(error.response?.data?.message || INTERNAL_SERVER_ERROR_MESSAGE)

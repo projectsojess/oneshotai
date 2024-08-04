@@ -38,7 +38,7 @@ export async function POST(request: NextRequest) {
         const project = data[0];
 
         return NextResponse.json({
-            project,
+            projectId: project.id,
             message:'Success'
         }, {status:200})
     } catch (error) {
