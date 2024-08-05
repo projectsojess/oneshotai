@@ -7,14 +7,13 @@ interface CardTileProps {
   title?: string,
   description?: string,
   isButton?: boolean,
-  onClick? : () => void
+  handleClick? : () => void
 }
-const CardTile = ({ title, description, isButton = false, onClick }: CardTileProps) => {
+const CardTile = ({ title, description, isButton = false,handleClick }: CardTileProps) => {
     if (isButton) {
         return (
           <Card 
             className="w-[200px] h-[120px] flex items-center justify-center cursor-pointer hover:bg-gray-100 transition-colors rounded-lg"
-            onClick={onClick}
           >
             <CardHeader>
               <CardTitle className='justify-center items-center flex'>
@@ -29,7 +28,9 @@ const CardTile = ({ title, description, isButton = false, onClick }: CardTilePro
       }
     
       return (
-        <Card className="w-[200px] h-[120px]">
+        <Card className="w-[200px] h-[120px] cursor-pointer hover:bg-gray-100 transition-colors rounded-lg"
+        onClick={handleClick}
+        >
           <CardHeader>
             <CardTitle>{title}</CardTitle>
             <CardDescription>{description}</CardDescription>

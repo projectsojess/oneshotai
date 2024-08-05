@@ -1,4 +1,4 @@
-import { INTERNAL_SERVER_ERROR_MESSAGE, INVALID_DATA } from "@/constants/error-messages";
+import { INTERNAL_SERVER_ERROR_MESSAGE, INVALID_DATA, INVALID_REQUEST } from "@/constants/error-messages";
 import { logger } from "@/logger/logger";
 import { NewProjectSchema } from "@/schemas/validation/new-project-schema";
 import { createServer } from "@/utils/supabase/server";
@@ -44,6 +44,43 @@ export async function POST(request: NextRequest) {
     } catch (error) {
 
         logger.error("Error creating project")
+        return NextResponse.json({
+            message: INTERNAL_SERVER_ERROR_MESSAGE
+        }, {status:500});
+    }
+}
+
+export async function GET(request: NextRequest) {
+
+    const supabase = createServer();
+    const { data }= await supabase.auth.getUser();
+    const { user } = data;
+    try{
+
+        if(user){
+
+            const { data, error } = await supabase.from("projects")
+                                    .select('*')
+                                    .eq("user_id", user.id);
+            if(error) {
+                logger.error(`Error getting projects for user id:  ${user.id} e: ${error.message}`)
+                return NextResponse.json({
+                    message: INTERNAL_SERVER_ERROR_MESSAGE
+                }, {status:500});
+            }
+
+            return NextResponse.json({
+                projects: data
+            }, {status:200})
+            
+        }
+
+        return NextResponse.json({
+            message: INVALID_REQUEST
+        }, {status:400});
+    }catch(error){
+
+        logger.error(`Error getting projects for user id:  ${user.id}`)
         return NextResponse.json({
             message: INTERNAL_SERVER_ERROR_MESSAGE
         }, {status:500});
