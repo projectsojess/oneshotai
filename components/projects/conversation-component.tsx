@@ -1,10 +1,18 @@
 'use client'
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { useState } from "react";
-import { MessageCircle, Calendar, ChevronRight } from "lucide-react";
-
-const ConversationComponent = () => {
+import { useEffect, useState } from "react";
+import { MessageCircle, Calendar, ChevronRight, History } from "lucide-react";
+import PromptInput from "../conversations/prompt-input";
+import toast from "react-hot-toast";
+import { INTERNAL_SERVER_ERROR_MESSAGE } from "@/constants/error-messages";
+import axios from "axios";
+interface ConversationComponentProps {
+  projectId: string
+}
+const ConversationComponent = ({ projectId }: ConversationComponentProps) => {
+  const [models, setModels ] = useState([]);
+  const [modelsLoading, setModelsLoading ] = useState(true);
   const [conversations, setConversations] = useState([
     {
       title: 'Project Kickoff Meeting',
@@ -26,15 +34,37 @@ const ConversationComponent = () => {
     },
   ]);
 
+  useEffect(() => {
+
+    const getTextModels = async () => {
+      try {
+      
+        const resp = await axios.get("/api/models/TEXT");
+
+        const { data } = resp;
+        setModels(data.models);
+        setModelsLoading(false);
+    } catch (error) {
+      
+      toast.error(error.response?.data?.message || INTERNAL_SERVER_ERROR_MESSAGE)
+    }
+    }
+
+    getTextModels();
+  },[])
   return (
     <Card className="lg:col-span-3 border-0 shadow-md">
       <CardHeader className="bg-gradient-to-r from-sky-500 to-indigo-600 text-white rounded-t-lg">
         <CardTitle className="flex items-center text-2xl">
           <MessageCircle className="mr-2" />
-          Topics
+          Conversations
         </CardTitle>
       </CardHeader>
       <CardContent className="p-0">
+        <PromptInput models={models} projectId={projectId}/>
+        <div className="mt-14 flex ml-7 text-xl">
+            <History className="w-6 h-6 mr-2" /> Recent Conversations
+        </div>
         <ScrollArea className="h-[500px] p-4">
           {conversations.map((conversation, index) => (
             <div 

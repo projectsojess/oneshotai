@@ -95,20 +95,20 @@ const ProjectHeader = ({ projectId }) => {
           <Input 
             value={tempTitle}
             onChange={(e) => setTempTitle(e.target.value)}
-            className="text-2xl font-bold pr-20 border-0 outline-none focus-visible:ring-0 focus-visible:ring-transparent"
+            className="text-2xl font-bold pr-20 border-0 outline-none focus-visible:ring-0 focus-visible:ring-transparent bg-gray-700 text-secondary"
             autoFocus
           />
           <div className="absolute right-1 top-1/2 transform -translate-y-1/2 flex space-x-1">
-            <Button onClick={handleCancelTitle} size="sm" variant="ghost" className='hover:bg-red-500/20'>
+            <Button onClick={handleCancelTitle} size="sm" variant="ghost" className='text-red-500 hover:bg-transparent hover:text-red-700'>
               <X className='w-4 h-4'/>
             </Button>
             <Button onClick={handleSaveTitle} size="sm" variant='ghost' className='hover:bg-green-500/20'>
-              <Check className='text-green-500 w-4 h-4'/><AiOutlineLoading3Quarters className={cn(!loading ?  "hidden" : "block animate-spin ml-2")}/>
+              <Check className='text-green-500 w-4 h-4'/><AiOutlineLoading3Quarters className={cn(!loading ?  "hidden" : "block animate-spin ml-2 text-green-500")}/>
             </Button>
           </div>
         </div>
       ) : (
-        <h1 className="text-2xl font-bold mb-2 flex items-center bg-gradient-to-r from-sky-500 to-indigo-600 p-2 rounded-t-lg text-white">
+        <h1 className="text-2xl font-bold mb-2 flex items-center bg-gray-800 p-4 rounded-t-lg text-white">
           {projectTitle}
           <Button variant="ghost" size="sm" onClick={() => setIsEditingTitle(true)} className="ml-2">
             <Edit className="w-4 h-4" />
