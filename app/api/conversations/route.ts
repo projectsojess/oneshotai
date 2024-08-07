@@ -1,5 +1,5 @@
-import { CREATE_TILE_DESC_QUERY, OPENAI_TEXT_ASSISTENT } from "@/constants/app-constants";
-import { INTERNAL_SERVER_ERROR_MESSAGE, INVALID_DATA } from "@/constants/error-messages";
+import {OPENAI_TEXT_ASSISTENT } from "@/constants/app-constants";
+import { INTERNAL_SERVER_ERROR_MESSAGE, INVALID_DATA, INVALID_REQUEST } from "@/constants/error-messages";
 import { getUserServer } from "@/hooks/use-current-user";
 import { logger } from "@/logger/logger";
 import { PromptSchema } from "@/schemas/validation/prompt-schema";
@@ -60,7 +60,7 @@ export async function POST(request: NextRequest) {
                                         project_id:projectId,
                                         model:values.model,
                                         icon,
-                                        chat_id: id,
+                                        model_chat_id: id,
                                         title: validValues.title,
                                         description: validValues.description
                                     }).select();
@@ -74,6 +74,7 @@ export async function POST(request: NextRequest) {
 
         const messageData = allMessages.map((message) => ({
             role: message.role,
+            project_id:projectId,
             content:message.content,
             chat_id: chatId,
             model: validValues.model
@@ -98,11 +99,12 @@ export async function POST(request: NextRequest) {
 
         try {
             const supabase = createServer();
+
             const user = await getUserServer();
 
-            const { data, error } = await supabase.from('chats')
-                                    .select('id,created_at,title,description,icon')
-                                    .eq("user_id", user.id).limit(3);
+            const { data, error } = await supabase.from('projects')
+                                    .select('*')
+                                    .eq("user_id", user.id);
 
             if(error){
                 logger.error(`Error fetching all chats e: ${error.message}`)
@@ -110,8 +112,24 @@ export async function POST(request: NextRequest) {
                     message: INTERNAL_SERVER_ERROR_MESSAGE,
                 },{status:500});
             }
+            let chatData=[];
+            const promises = data.map(async (project) => {
+                const { data, error } = await supabase.from("chats")
+                    .select('id,title,icon')
+                    .eq("project_id", project.id);
+                if (data) {
+                    return {
+                        project: project.name,
+                        projectId: project.id,
+                        chats: data
+                    };
+                }
+                return null;
+            });
+            chatData = await Promise.all(promises);
+            chatData = chatData.filter(item => item !== null);
             return NextResponse.json({
-                chats: data
+                chats: chatData
             },{status:200});
         } catch (error) {
             

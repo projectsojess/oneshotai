@@ -39,7 +39,7 @@ const ConversationComponent = ({ projectId }: ConversationComponentProps) => {
 
       try {
       
-        const resp = await axios.get("/api/conversations");
+        const resp = await axios.get(`/api/projects/${projectId}/conversations`);
 
         const { data } = resp;
         setConversations(data.chats);
@@ -54,9 +54,9 @@ const ConversationComponent = ({ projectId }: ConversationComponentProps) => {
     getConversations();
   },[])
 
-  const loadChatPage = (id) => {
+  const loadChatPage = (chatId) => {
 
-    router.push(`/conversations/${id}`);
+    router.push(`/conversations/${chatId}`);
   }
   return (
     <Card className="lg:col-span-3 border-0 shadow-md">
