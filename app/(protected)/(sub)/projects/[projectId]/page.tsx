@@ -32,20 +32,6 @@ const ProjectPage = ({params} : {params : {projectId: string}}) => {
         getProjectData();
       },[])
 
-      const createNewConvo = async() => {
-
-        try {
-          const resp = await axios.post("/api/conversations",{
-            projectId: params.projectId
-          });
-          const {data} = resp;
-
-          router.push(`/conversations/${data.chatId}`)
-        } catch (error) {
-          
-          toast.error(error.response?.data?.message || INTERNAL_SERVER_ERROR_MESSAGE)
-        }
-      }
     return (
       <div className="container mx-auto p-4">
           <div className="mb-8">
@@ -93,10 +79,6 @@ const ProjectPage = ({params} : {params : {projectId: string}}) => {
           Project Info
         </Button>
       </div>
-      <Button className="fixed bottom-6 left-6 rounded-full shadow-lg" onClick={createNewConvo}>
-        <MessageSquare className="w-4 h-4 mr-2" />
-        Start New Conversation
-      </Button>
       </div>
     )
 }

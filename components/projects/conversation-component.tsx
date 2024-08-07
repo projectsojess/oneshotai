@@ -7,32 +7,18 @@ import PromptInput from "../conversations/prompt-input";
 import toast from "react-hot-toast";
 import { INTERNAL_SERVER_ERROR_MESSAGE } from "@/constants/error-messages";
 import axios from "axios";
+import ConversationCardSkeleton from "../skeletons/projects/conversation-skeleton";
+import { formatDate } from "@/utils/date-time-formatter";
+import { useRouter } from "next/navigation";
 interface ConversationComponentProps {
   projectId: string
 }
 const ConversationComponent = ({ projectId }: ConversationComponentProps) => {
   const [models, setModels ] = useState([]);
   const [modelsLoading, setModelsLoading ] = useState(true);
-  const [conversations, setConversations] = useState([
-    {
-      title: 'Project Kickoff Meeting',
-      preview: 'Discussing initial project requirements and timeline.',
-      date: '2023-08-15',
-      unread: true,
-    },
-    {
-      title: 'UI/UX Design Review',
-      preview: 'Feedback on the latest mockups for the dashboard.',
-      date: '2023-08-17',
-      unread: false,
-    },
-    {
-      title: 'Backend Architecture Discussion',
-      preview: 'Finalizing the database schema and API endpoints.',
-      date: '2023-08-20',
-      unread: true,
-    },
-  ]);
+  const [chatsLoading, setChatsLoading] = useState(true);
+  const [conversations, setConversations] = useState([]);
+  const router = useRouter();
 
   useEffect(() => {
 
@@ -49,9 +35,29 @@ const ConversationComponent = ({ projectId }: ConversationComponentProps) => {
       toast.error(error.response?.data?.message || INTERNAL_SERVER_ERROR_MESSAGE)
     }
     }
+    const getConversations = async () => {
 
+      try {
+      
+        const resp = await axios.get("/api/conversations");
+
+        const { data } = resp;
+        setConversations(data.chats);
+        setChatsLoading(false);
+    } catch (error) {
+      
+      toast.error(error.response?.data?.message || INTERNAL_SERVER_ERROR_MESSAGE)
+    }
+
+    }
     getTextModels();
+    getConversations();
   },[])
+
+  const loadChatPage = (id) => {
+
+    router.push(`/conversations/${id}`);
+  }
   return (
     <Card className="lg:col-span-3 border-0 shadow-md">
       <CardHeader className="bg-gradient-to-r from-sky-500 to-indigo-600 text-white rounded-t-lg">
@@ -66,24 +72,27 @@ const ConversationComponent = ({ projectId }: ConversationComponentProps) => {
             <History className="w-6 h-6 mr-2" /> Recent Conversations
         </div>
         <ScrollArea className="h-[500px] p-4">
-          {conversations.map((conversation, index) => (
+          {!chatsLoading && conversations.map((conversation, index) => (
             <div 
               key={index} 
               className="mb-4 p-4 bg-white rounded-lg shadow hover:shadow-md transition-all duration-200 cursor-pointer border border-gray-100"
+              onClick={() => loadChatPage(conversation.id)}
             >
               <div className="flex justify-between items-start mb-2">
                 <h3 className="font-semibold text-lg text-gray-800">{conversation.title}</h3>
               </div>
-              <p className="text-sm text-gray-600 mb-2">{conversation.preview}</p>
+              <p className="text-sm text-gray-600 mb-2">{conversation.description}</p>
               <div className="flex justify-between items-center text-xs text-gray-400">
                 <span className="flex items-center">
                   <Calendar className="w-4 h-4 mr-1" />
-                  {conversation.date}
+                  {formatDate(conversation.created_at)}
                 </span>
                 <ChevronRight className="w-4 h-4" />
               </div>
             </div>
           ))}
+          {chatsLoading && <ConversationCardSkeleton />}
+          {chatsLoading && <ConversationCardSkeleton />}
         </ScrollArea>
       </CardContent>
     </Card>
