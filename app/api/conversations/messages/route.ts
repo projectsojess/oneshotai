@@ -54,7 +54,6 @@ export async function POST(request: NextRequest) {
             messages: data,
         },{status:200});
     } catch (error) {
-        console.log(error);
         logger.error("Error creating new message")
         return NextResponse.json({
             message: INTERNAL_SERVER_ERROR_MESSAGE

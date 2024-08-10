@@ -1,6 +1,7 @@
 'use client';
 import AudioDialog from "@/components/audio-generation/audio-dialog";
 import ChatBox from "@/components/conversations/chat-box";
+import ChatDrawer from "@/components/conversations/chat-drawer";
 import ChatSidebar from "@/components/conversations/chat-sidebar";
 import ImageDialog from "@/components/image-generation/image-dialogue";
 import { useState } from "react";
@@ -55,7 +56,7 @@ const ChatPage = ({params} : {params : {chatId: string}}) => {
             </div>
             <main className='md:pl-72'>
             <ChatBox chatId={params.chatId}  openImageDialog={openImageDialog} openAudioDialog={openAudioDialog}/>
-        </main>
+        </main>    
         </div>
     )
 }

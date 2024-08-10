@@ -19,8 +19,8 @@ export async function GET(request: NextRequest, context: any) {
         const supabase = createServer();
 
         const { data, error } = await supabase.from("chat_messages")
-                                    .select('id,role,content,model,project_id')
-                                    .eq("chat_id",chatId);
+                                    .select('id,role,content,model,project_id,project_pinned,chat_pinned')
+                                    .eq("chat_id",chatId).order('created_at');
         if(error){
             logger.error(`Error getting chats e: ${error.message}`)
                 return NextResponse.json({

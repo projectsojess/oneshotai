@@ -1,6 +1,6 @@
 'use client';
 import * as z from 'zod';
-import {  AudioLinesIcon, Copy, ImageIcon, MoreVertical, Send, User } from 'lucide-react';
+import {  AudioLinesIcon, Copy, ImageIcon, MoreVertical, PinIcon, Send, User } from 'lucide-react';
 import React, { useEffect, useRef, useState } from 'react'
 import { Input } from '../ui/input';
 import { Button } from '../ui/button';
@@ -14,13 +14,16 @@ import { ChatPromptSchema } from '@/schemas/validation/chat-prompt-schema';
 import toast from 'react-hot-toast';
 import { INTERNAL_SERVER_ERROR_MESSAGE } from '@/constants/error-messages';
 import { MessageRenderer } from './message-renderer';
+import ChatDrawer from './chat-drawer';
 
  
 interface Message {
   id: string,
   role: string,
   content: string,
-  project_id: string
+  project_id: string,
+  chat_pinned: boolean,
+  project_pinned: boolean
 }
 interface ChatBoxProps {
   chatId: string;
@@ -30,6 +33,73 @@ interface ChatBoxProps {
 
 
 const ChatBox = ({ chatId, openImageDialog, openAudioDialog} : ChatBoxProps) => {
+
+  const [pinnedItems, setPinnedItems ] = useState([]);
+
+  useEffect(() => {
+
+    const getAllPinnedItems = async() => {
+
+        try {
+            const resp = await axios.get("/api/conversations/pinned",{
+                params: {chatId}
+            })
+            const { data } = resp;
+
+            setPinnedItems(data.pinnedItems);
+        } catch (error) {
+            
+            toast.error(error.response?.data?.message || INTERNAL_SERVER_ERROR_MESSAGE)
+        }
+    }
+    getAllPinnedItems();
+  },[]);
+
+  const removePinnedItem = (id) => {
+    setPinnedItems(pinnedItems.filter(item => item.id !== id));
+  };
+
+  const addPinnedItem = (newItem) => {
+    setPinnedItems([...pinnedItems, newItem]);
+  };
+
+  const updateMessagePinnedStatus = (
+    messageId: string,
+    chatPinned: boolean,
+    projectPinned: boolean
+  ) => {
+    setMessages(prevMessages => 
+      prevMessages.map(message => 
+        message.id === messageId 
+          ? { ...message, chat_pinned: chatPinned, project_pinned: projectPinned }
+          : message
+      )
+    );
+  };
+  const pinMessageChat = async (id)=> {
+
+    try {
+        const resp = await axios.put("/api/conversations/pinned",{
+          messageId : id,
+          project: false,
+          chat: true
+        });
+
+        const { data } = resp;
+
+        addPinnedItem(data.pinnedItem);
+        updateMessagePinnedStatus(id,true,false);
+        toast.success("Message pinned successfully. Open chat info section to see your pinned messages");
+        
+    } catch (error) {
+      
+      toast.error(error.response?.data?.message || INTERNAL_SERVER_ERROR_MESSAGE)
+    }
+  }
+
+  const pinMessageProject = async (id)=> {
+
+  }
 
   const form = useForm<z.infer<typeof ChatPromptSchema>>({
     resolver: zodResolver(ChatPromptSchema),
@@ -48,7 +118,6 @@ const ChatBox = ({ chatId, openImageDialog, openAudioDialog} : ChatBoxProps) => 
         try {
           const resp = await axios.get(`/api/conversations/${chatId}`);
           const { data } = resp;
-          console.log(data.messages);
           setMessages(data.messages);
        } catch (error: any) {
 
@@ -94,6 +163,7 @@ const ChatBox = ({ chatId, openImageDialog, openAudioDialog} : ChatBoxProps) => 
           toast.error("Failed to copy to clipboard");
         }
       };
+
   return (
     <div className="flex h-screen bg-gray-100">
          <div className="flex-1 flex flex-col">
@@ -118,6 +188,28 @@ const ChatBox = ({ chatId, openImageDialog, openAudioDialog} : ChatBoxProps) => 
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
+                      {!message.chat_pinned && (
+                        <DropdownMenuItem>
+                        <Button 
+                        variant='ghost'
+                        onClick={() => pinMessageChat(message.id)}
+                        >
+                          <PinIcon className="mr-2 h-4 w-4 text-blue-500"/>
+                          <span>Pin to Chat</span>
+                        </Button>
+                      </DropdownMenuItem>
+                      )}
+                      {!message.project_pinned && (
+                        <DropdownMenuItem>
+                        <Button 
+                        variant='ghost'
+                        onClick={() => pinMessageProject(message.id)}
+                        >
+                          <PinIcon className="mr-2 h-4 w-4 text-yellow-500"/>
+                          <span>Pin to Project</span>
+                        </Button>
+                      </DropdownMenuItem>
+                      )}
                       <DropdownMenuItem>
                         <Button 
                         variant='ghost'
@@ -150,6 +242,7 @@ const ChatBox = ({ chatId, openImageDialog, openAudioDialog} : ChatBoxProps) => 
             </div>
           ))}
           <div ref={messagesEndRef} />
+          <ChatDrawer pinnedItems={pinnedItems}/>
         </div>
         <div className="p-4 border-t bg-gray-100">
           <Form {...form}>

@@ -39,9 +39,9 @@ const ProjectPage = ({params} : {params : {projectId: string}}) => {
           </div>
           
           <div className="flex flex-col lg:flex-row gap-8">
-        <div className="lg:w-2/3">
-        <ConversationComponent projectId={params.projectId}/>
-        </div>
+            <div className="lg:w-2/3">
+            <ConversationComponent projectId={params.projectId}/>
+            </div>
 
         {/* Project Information for larger screens */}
         <div className="hidden lg:block lg:w-1/3">
