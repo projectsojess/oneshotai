@@ -80,3 +80,29 @@ export const MODEL_CONFIGS = {
   export const OPEN_AI_IMAGE_MODELS = ['dall-e-3','dall-e-2'];
 
 export const SD_IMAGE_MODELS = ['sd3-large-turbo','sd3-medium','sd3-large','sd-image-core','sd-image-ultra'];
+
+
+export const RESOLUTIONS = [
+  "256x256",
+  "512x512",
+  "1024x1024",
+  "1792x1024",
+  "1024x1792",
+
+];
+export const DALL_E_2_RESOLUTIONS = ['256x256', '512x512', '1024x1024'];
+export const DALL_E_3_RESOLUTIONS = ['1024x1024', '1792x1024', '1024x1792'];
+export const WHISPER_SUPPORTED_FORMATS = ['flac', 'mp3', 'mp4', 'mpeg', 'mpga', 'm4a', 'ogg', 'wav',  'webm']
+
+
+export const RESOLUTIONS_ASPECT_MAP = {
+  "1024x576": "16:9" ,
+  "1024x1024": "1:1" ,
+  "1024x439": "21:9" ,
+  "1024x1536": "2:3" ,
+  "1024x682": "3:2" ,
+  "1024x1280": "4:5" ,
+  "1024x819": "5:4" ,
+  "1024x1820": "9:16" ,
+  "1024x2391": "9:21" 
+}

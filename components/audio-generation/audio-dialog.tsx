@@ -20,12 +20,16 @@ import { AudioPromptSchema } from '@/schemas/validation/audio-prompt-schema';
 import { AUDIO_MODEL_CONFIGS } from '@/constants/app-constants';
 import toast from 'react-hot-toast';
 import { INTERNAL_SERVER_ERROR_MESSAGE } from '@/constants/error-messages';
+import { AiOutlineLoading3Quarters } from 'react-icons/ai';
+import { cn } from '@/lib/utils';
 
 interface AudioDialogProps {
     isOpen: boolean;
     onClose: () => void;
     prompt: string;
     models: { value: string; name: string }[];
+    projectId: string,
+    chatId:string
   }
 
   interface GeneratedAudio {
@@ -33,7 +37,7 @@ interface AudioDialogProps {
     fileName: string;
   }
 
-const AudioDialog = ({ isOpen, onClose, prompt, models } : AudioDialogProps) => {
+const AudioDialog = ({ isOpen, onClose, prompt, models,projectId,chatId } : AudioDialogProps) => {
   const [isEditing, setIsEditing] = useState(false);
   const [editablePrompt, setEditablePrompt] = useState(prompt);
    const [generatedAudio, setGeneratedAudio] = useState<GeneratedAudio | null>(null);
@@ -193,7 +197,7 @@ const AudioDialog = ({ isOpen, onClose, prompt, models } : AudioDialogProps) => 
             </div>
             {generatedAudio && (
               <div className='pt-4 pb-4'>
-                <CustomAudioPlayer audioSrc={generatedAudio.url} fileName={generatedAudio.fileName} />
+                <CustomAudioPlayer audioSrc={generatedAudio.url} fileName={generatedAudio.fileName} projectId={projectId} chatId={chatId}/>
               </div>
             )}
             <div className="pt-4">
@@ -204,6 +208,7 @@ const AudioDialog = ({ isOpen, onClose, prompt, models } : AudioDialogProps) => 
               >
                 <Wand2 className="w-5 h-5" />
                 Generate Audio
+                <AiOutlineLoading3Quarters className={cn(!isSubmitting ?  "hidden" : "block animate-spin ml-2 w-4 h-4")}/>
               </Button>
             </div>
           </form>

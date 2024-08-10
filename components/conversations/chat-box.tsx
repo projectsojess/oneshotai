@@ -29,10 +29,11 @@ interface ChatBoxProps {
   chatId: string;
   openImageDialog: (prompt: string) => void;
   openAudioDialog: (prompt: string) => void;
+  initializeProjectId: (projectId: string) => void;
 }
 
 
-const ChatBox = ({ chatId, openImageDialog, openAudioDialog} : ChatBoxProps) => {
+const ChatBox = ({ chatId, openImageDialog, openAudioDialog,initializeProjectId} : ChatBoxProps) => {
 
   const [pinnedItems, setPinnedItems ] = useState([]);
 
@@ -76,29 +77,29 @@ const ChatBox = ({ chatId, openImageDialog, openAudioDialog} : ChatBoxProps) => 
       )
     );
   };
-  const pinMessageChat = async (id)=> {
+  const pinMessage = async (id: string, chat:boolean, project:boolean)=> {
 
     try {
         const resp = await axios.put("/api/conversations/pinned",{
           messageId : id,
-          project: false,
-          chat: true
+          project,
+          chat
         });
 
         const { data } = resp;
 
-        addPinnedItem(data.pinnedItem);
-        updateMessagePinnedStatus(id,true,false);
-        toast.success("Message pinned successfully. Open chat info section to see your pinned messages");
+        if(chat){
+          addPinnedItem(data.pinnedItem);
+        }
+        updateMessagePinnedStatus(id,chat,project);
+        toast.success(`Message pinned successfully. ${ chat ? 'Open chat info section to see your pinned messages' :
+          ''
+        }`);
         
     } catch (error) {
       
       toast.error(error.response?.data?.message || INTERNAL_SERVER_ERROR_MESSAGE)
     }
-  }
-
-  const pinMessageProject = async (id)=> {
-
   }
 
   const form = useForm<z.infer<typeof ChatPromptSchema>>({
@@ -119,6 +120,7 @@ const ChatBox = ({ chatId, openImageDialog, openAudioDialog} : ChatBoxProps) => 
           const resp = await axios.get(`/api/conversations/${chatId}`);
           const { data } = resp;
           setMessages(data.messages);
+          initializeProjectId(data.messages[0].project_id)
        } catch (error: any) {
 
         toast.error(error.response?.data?.message || INTERNAL_SERVER_ERROR_MESSAGE)
@@ -192,7 +194,7 @@ const ChatBox = ({ chatId, openImageDialog, openAudioDialog} : ChatBoxProps) => 
                         <DropdownMenuItem>
                         <Button 
                         variant='ghost'
-                        onClick={() => pinMessageChat(message.id)}
+                        onClick={() => pinMessage(message.id,true,false)}
                         >
                           <PinIcon className="mr-2 h-4 w-4 text-blue-500"/>
                           <span>Pin to Chat</span>
@@ -203,7 +205,7 @@ const ChatBox = ({ chatId, openImageDialog, openAudioDialog} : ChatBoxProps) => 
                         <DropdownMenuItem>
                         <Button 
                         variant='ghost'
-                        onClick={() => pinMessageProject(message.id)}
+                        onClick={() => pinMessage(message.id,false,true)}
                         >
                           <PinIcon className="mr-2 h-4 w-4 text-yellow-500"/>
                           <span>Pin to Project</span>

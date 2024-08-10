@@ -1,20 +1,25 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { PlayCircle, PauseCircle, Download } from 'lucide-react';
+import { PlayCircle, PauseCircle, Download, Loader2, Save } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import toast from 'react-hot-toast';
 import { INTERNAL_SERVER_ERROR_MESSAGE } from '@/constants/error-messages';
+import axios from 'axios';
 
 interface CustomAudioPlayerProps {
     audioSrc: string;
     fileName?: string;
+    projectId?: string,
+    chatId?: string
   }
 
-const CustomAudioPlayer: React.FC<CustomAudioPlayerProps> = ({ audioSrc, fileName = 'audio' }) => {
+const CustomAudioPlayer: React.FC<CustomAudioPlayerProps> = ({ audioSrc, fileName = 'audio', projectId, chatId }) => {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [isPlaying, setIsPlaying] = useState<boolean>(false);
   const [currentTime, setCurrentTime] = useState<number>(0);
   const [duration, setDuration] = useState<number>(0);
+  const [isSaving, setIsSaving] = useState<boolean>(false);
+  
 
   useEffect(() => {
     const audio = audioRef.current;
@@ -72,13 +77,38 @@ const CustomAudioPlayer: React.FC<CustomAudioPlayerProps> = ({ audioSrc, fileNam
     }
   };
 
+const saveAudio = async() => {
 
+  setIsSaving(true);
+  try {
+    
+    const response = await fetch(audioSrc);
+      const blob = await response.blob();
+      const base64 = await new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(reader.result);
+        reader.readAsDataURL(blob);
+      });
+
+      const resp = await axios.post("/api/audios",{
+        base64,
+        projectId,
+        chatId
+      });
+      toast.success(resp.data?.message);
+  } catch (error) {
+
+    toast.error(error.response?.data?.message || INTERNAL_SERVER_ERROR_MESSAGE)
+  }finally{
+    setIsSaving(false)
+  }
+}
   return (
     <div className="bg-gray-700 rounded-lg p-4 mt-4">
       <audio ref={audioRef} src={audioSrc} />
       <div className="flex items-center justify-between mb-2">
         <Button
-        type='button'
+          type='button'
           onClick={togglePlayPause}
           variant="ghost"
           size="icon"
@@ -90,18 +120,34 @@ const CustomAudioPlayer: React.FC<CustomAudioPlayerProps> = ({ audioSrc, fileNam
             <PlayCircle className="h-8 w-8" />
           )}
         </Button>
-        <div className="text-gray-300 text-sm">
+        <div className="text-gray-300 text-sm flex-grow text-center">
           {formatTime(currentTime)} / {formatTime(duration)}
         </div>
-        <Button
+        <div className="flex space-x-2">
+          <Button
             type='button'
-          onClick={downloadAudio}
-          variant="ghost"
-          size="icon"
-          className="text-gray-100 hover:text-green-500 transition-colors hover:bg-gray-700"
-        >
-          <Download className="h-5 w-5" />
-        </Button>
+            onClick={downloadAudio}
+            variant="ghost"
+            size="icon"
+            className="text-gray-100 hover:text-green-500 transition-colors hover:bg-gray-700"
+          >
+            <Download className="h-5 w-5" />
+          </Button>
+          <Button
+            type='button'
+            onClick={saveAudio}
+            variant="ghost"
+            size="icon"
+            className="text-gray-100 hover:text-green-500 transition-colors hover:bg-gray-700"
+            disabled={isSaving}
+          >
+            {isSaving ? (
+              <Loader2 className="h-5 w-5 animate-spin" />
+            ) : (
+              <Save className="h-5 w-5" />
+            )}
+          </Button>
+        </div>
       </div>
       <Slider
         min={0}

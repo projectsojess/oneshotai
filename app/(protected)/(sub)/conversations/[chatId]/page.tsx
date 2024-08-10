@@ -1,16 +1,37 @@
 'use client';
 import AudioDialog from "@/components/audio-generation/audio-dialog";
 import ChatBox from "@/components/conversations/chat-box";
-import ChatDrawer from "@/components/conversations/chat-drawer";
 import ChatSidebar from "@/components/conversations/chat-sidebar";
 import ImageDialog from "@/components/image-generation/image-dialogue";
-import { useState } from "react";
+import { INTERNAL_SERVER_ERROR_MESSAGE } from "@/constants/error-messages";
+import axios from "axios";
+import { useEffect, useState } from "react";
+import toast from "react-hot-toast";
 
 const ChatPage = ({params} : {params : {chatId: string}}) => {
 
     const [isImageDialogOpen, setIsImageDialogOpen] = useState(false);
     const [isAudioDialogOpen, setIsAudioDialogOpen] = useState(false);
     const [selectedPrompt, setSelectedPrompt] = useState('');
+    const [projectId, setProjectId ] = useState('');
+
+    const [models, setModels ] = useState([]);
+    useEffect(() => {
+
+      const getAllModels = async () => {
+        try {
+        
+          const resp = await axios.get("/api/models");
+  
+          const { data } = resp;
+          setModels(data.models);
+      } catch (error) {
+        
+        toast.error(error.response?.data?.message || INTERNAL_SERVER_ERROR_MESSAGE)
+      }
+      }
+      getAllModels();
+    },[])
 
    const openImageDialog = (prompt: string) => {
     setSelectedPrompt(prompt);
@@ -21,6 +42,11 @@ const ChatPage = ({params} : {params : {chatId: string}}) => {
     setSelectedPrompt(prompt);
     setIsAudioDialogOpen(true);
   }
+
+  const initializeProjectId = (projectId:string) => {
+
+    setProjectId(projectId);
+  }
     return (
         <div className='h-full relative'>
             {isImageDialogOpen && (
@@ -29,23 +55,21 @@ const ChatPage = ({params} : {params : {chatId: string}}) => {
           isOpen={isImageDialogOpen}
           onClose={() => setIsImageDialogOpen(false)}
           prompt={selectedPrompt}
-          models={[
-            { value: 'dall-e-3', name: 'DALL-E 3' },
-            { value: 'dall-e-2', name: 'DALL-E 2' }
-          ]}
+          models={models.filter((model) => model.type ==='IMAGE')}
+          chatId={params.chatId}
+          projectId=""
         />
       </div>
       )}
       {isAudioDialogOpen && (
         <div className='fixed inset-0 z-50'>
         <AudioDialog
+          projectId={projectId}
+          chatId={params.chatId}
           isOpen={isAudioDialogOpen}
           onClose={() => setIsAudioDialogOpen(false)}
           prompt={selectedPrompt}
-          models={[
-            { value: 'tts-1', name: 'TTS 1 (OPEN AI)' },
-            { value: 'tts-1-hd', name: 'TTS 1 HD (OPEN AI)' }
-          ]}
+          models={models.filter((model) => model.type ==='AUDIO')}
         />
       </div>
       )}
@@ -55,7 +79,7 @@ const ChatPage = ({params} : {params : {chatId: string}}) => {
                 <ChatSidebar selectedChatId={params.chatId} />
             </div>
             <main className='md:pl-72'>
-            <ChatBox chatId={params.chatId}  openImageDialog={openImageDialog} openAudioDialog={openAudioDialog}/>
+            <ChatBox chatId={params.chatId}  openImageDialog={openImageDialog} openAudioDialog={openAudioDialog} initializeProjectId={initializeProjectId}/>
         </main>    
         </div>
     )

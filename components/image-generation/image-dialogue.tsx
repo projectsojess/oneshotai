@@ -12,14 +12,16 @@ import {
 } from "@/components/ui/dialog";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ImageIcon, Wand2, Edit2, Download, MoreVertical, Edit, Save } from 'lucide-react';
+import { ImageIcon, Wand2, Edit2} from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
 import axios from 'axios';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '../ui/dropdown-menu';
 import { ImagePromptSchema } from '@/schemas/validation/image-prompt-schema';
 import toast from 'react-hot-toast';
 import { INTERNAL_SERVER_ERROR_MESSAGE } from '@/constants/error-messages';
 import { MODEL_CONFIGS, VARIATIONS } from '@/constants/app-constants';
+import { AiOutlineLoading3Quarters } from 'react-icons/ai';
+import { cn } from '@/lib/utils';
+import ImageComponent from './image-component';
 
 
 interface ImageDialogProps {
@@ -27,13 +29,14 @@ interface ImageDialogProps {
   onClose: () => void;
   prompt: string;
   models: { value: string; name: string }[];
+  projectId: string,
+  chatId: string
 }
 
-const ImageDialog: React.FC<ImageDialogProps> = ({ isOpen, onClose, prompt, models }) => {
+const ImageDialog: React.FC<ImageDialogProps> = ({ isOpen, onClose, prompt, models, projectId, chatId }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [editablePrompt, setEditablePrompt] = useState(prompt);
   const [generatedImages, setGeneratedImages] = useState([]);
-  const [isDownloading, setIsDownloading] = useState<number | null>(null);
 
   const form = useForm<z.infer<typeof ImagePromptSchema>>({
     resolver: zodResolver(ImagePromptSchema),
@@ -56,7 +59,7 @@ const ImageDialog: React.FC<ImageDialogProps> = ({ isOpen, onClose, prompt, mode
       });
 
       const { data } = resp;
-      setGeneratedImages(data.urls);
+      setGeneratedImages(data.imageData);
     } catch (error) {
 
       toast.error(error.response?.data?.message || INTERNAL_SERVER_ERROR_MESSAGE)
@@ -89,32 +92,6 @@ const ImageDialog: React.FC<ImageDialogProps> = ({ isOpen, onClose, prompt, mode
     return MODEL_CONFIGS[model as keyof typeof MODEL_CONFIGS]?.supportsVariations || false;
   };
 
-  const handleDownload = async (base64: string, index: number) => {
-    try {
-      setIsDownloading(index);
-    const byteCharacters = atob(base64);
-    const byteNumbers = new Array(byteCharacters.length);
-    for (let i = 0; i < byteCharacters.length; i++) {
-      byteNumbers[i] = byteCharacters.charCodeAt(i);
-    }
-    const byteArray = new Uint8Array(byteNumbers);
-    const blob = new Blob([byteArray], { type: "image/png" });
-    
-    const blobUrl = window.URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = blobUrl;
-    link.download = `generated-image-${index + 1}.png`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    
-    window.URL.revokeObjectURL(blobUrl);
-    setIsDownloading(null);
-    } catch (error) {
-      
-      toast.error(error.response?.data?.message || INTERNAL_SERVER_ERROR_MESSAGE)
-    }
-  };
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -145,7 +122,7 @@ const ImageDialog: React.FC<ImageDialogProps> = ({ isOpen, onClose, prompt, mode
                     {isEditing ? (
                       <FormControl>
                         <textarea
-                          className="w-full h-32 bg-gray-700 border-gray-600 text-gray-100 focus:border-gray-500 focus:ring-gray-500 pr-10 rounded-md resize-none overflow-y-auto"
+                          className="w-full h-64 bg-gray-700 border-gray-600 text-gray-100 focus:border-gray-500 focus:ring-gray-500 pr-10 rounded-md resize-none overflow-y-auto"
                           disabled={isLoading}
                           defaultValue={prompt}
                           placeholder="Describe the image you want to generate..."
@@ -156,7 +133,7 @@ const ImageDialog: React.FC<ImageDialogProps> = ({ isOpen, onClose, prompt, mode
                         />
                       </FormControl>
                     ) : (
-                      <div className="w-full h-32 bg-gray-800 border border-gray-800 text-gray-100 rounded-md p-2 pr-10 overflow-y-auto">
+                      <div className="w-full h-64 bg-gray-800 border border-gray-800 text-gray-100 rounded-md p-2 pr-10 overflow-y-auto">
                         {editablePrompt}
                       </div>
                     )}
@@ -246,7 +223,8 @@ const ImageDialog: React.FC<ImageDialogProps> = ({ isOpen, onClose, prompt, mode
                 className="w-full bg-red-500 hover:bg-red-600 text-gray-100 font-semibold py-2 px-4 rounded-lg shadow-md transition duration-300 ease-in-out transform hover:scale-105 flex items-center justify-center gap-2"
               >
                 <Wand2 className="w-5 h-5" />
-                Generate Image
+                Generate Image 
+                <AiOutlineLoading3Quarters className={cn(!isLoading ?  "hidden" : "block animate-spin ml-2 w-4 h-4")}/>
               </Button>
             </div>
           </form>
@@ -256,42 +234,7 @@ const ImageDialog: React.FC<ImageDialogProps> = ({ isOpen, onClose, prompt, mode
        {generatedImages.length > 0 ? (
               <div className="grid grid-cols-2 gap-4">
                 {generatedImages.map((data: any, index) => (
-                  <div key={index} className="relative group bg-gray-700 rounded-lg overflow-hidden">
-                    <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button size="icon" variant="secondary" className="w-8 h-8 p-0">
-                            <MoreVertical className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className='bg-gray-800 text-white border-0 border-radius-1'>
-                          <DropdownMenuItem onClick={() => console.log('Edit')} className='text-gray-200 focus:bg-gray-700 focus:text-gray-100 hover:bg-gray-700 hover:text-gray-100'>
-                            <Edit className='h-4 w-4 mr-2'/> <span> Edit</span>
-                          </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => console.log('Share')} className='text-gray-200 focus:bg-gray-700 focus:text-gray-100 hover:bg-gray-700 hover:text-gray-100'>
-                            <Save className='w-4 h-4 mr-2' /><span>Save</span>
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </div>
-                    <img src={`data:image/png;base64,${data.b64_json}`}  alt={`Generated image ${index + 1}`} className="w-full h-auto" />
-                    <div className="p-2">
-                    <Button
-                        onClick={() => handleDownload(data.b64_json, index)}
-                        variant="secondary"
-                        className="w-full text-white bg-red-500 hover:bg-red-600"
-                        disabled={isDownloading === index}
-                      >
-                        {isDownloading === index ? (
-                          "Downloading..."
-                        ) : (
-                          <>
-                            <Download className="h-4 w-4 mr-2" /> Download
-                          </>
-                        )}
-                      </Button>
-                    </div>
-                  </div>
+                    <ImageComponent imageData={data} key={index} index={index} projectId={projectId} chatId={chatId} />
                 ))}
               </div>
             ) : (

@@ -11,7 +11,6 @@ export const verifyOtp = async (values: {
 	redirectTo?: string
 }) => {
 	const supabase = createServer();
-	console.log(values.email)
 	const { error } = await supabase.auth.verifyOtp({
 		email: values.email,
 		token: values.otp,
