@@ -1,7 +1,7 @@
 'use client';
 
 import { cn } from '@/lib/utils'
-import { AudioLinesIcon,ImageIcon, LayoutDashboardIcon, MessageSquare, VideoIcon } from 'lucide-react'
+import { AudioLinesIcon,Folder,ImageIcon, LayoutDashboardIcon, MessageSquare, VideoIcon } from 'lucide-react'
 import { Montserrat } from 'next/font/google'
 import Image from 'next/image'
 import Link from 'next/link'
@@ -21,9 +21,9 @@ const routes = [
         color:'text-sky-500'
     },
     {
-        label: 'Text Generation',
-        icon: MessageSquare,
-        href: '/text-generation',
+        label: 'Projects',
+        icon: Folder,
+        href: '/projects',
         color:'text-violet-500'
     },
     {

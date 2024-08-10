@@ -101,7 +101,7 @@ const AudioDialog = ({ isOpen, onClose, prompt, models,projectId,chatId } : Audi
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="w-full max-w-[90vw] max-h-[90vh] overflow-y-auto bg-gray-800 border border-gray-700 p-4">
+      <DialogContent className="w-full max-w-[90vw] max-h-[90vh] overflow-y-auto bg-gray-800 border border-gray-700 p-4 text-gray-300">
         <DialogHeader>
           <DialogTitle className="text-xl sm:text-2xl font-bold text-gray-100 flex items-center gap-2 mb-2 mt-2">
             <MicIcon className="w-5 h-5 sm:w-6 sm:h-6 text-green-500" />

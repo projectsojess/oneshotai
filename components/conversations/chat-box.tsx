@@ -15,6 +15,7 @@ import toast from 'react-hot-toast';
 import { INTERNAL_SERVER_ERROR_MESSAGE } from '@/constants/error-messages';
 import { MessageRenderer } from './message-renderer';
 import ChatDrawer from './chat-drawer';
+import MessageListSkeleton from '../skeletons/conversations/message-list-skeleton';
 
  
 interface Message {
@@ -36,7 +37,6 @@ interface ChatBoxProps {
 const ChatBox = ({ chatId, openImageDialog, openAudioDialog,initializeProjectId} : ChatBoxProps) => {
 
   const [pinnedItems, setPinnedItems ] = useState([]);
-
   useEffect(() => {
 
     const getAllPinnedItems = async() => {
@@ -113,6 +113,7 @@ const ChatBox = ({ chatId, openImageDialog, openAudioDialog,initializeProjectId}
 
     const messagesEndRef = useRef<HTMLDivElement>(null);
     const [messages, setMessages ] = useState<any[]>([]);
+    const [messagesLoading, setMessagesLoading] = useState(true);
     useEffect(() => {
 
       const getAllMessages = async () => {
@@ -121,9 +122,10 @@ const ChatBox = ({ chatId, openImageDialog, openAudioDialog,initializeProjectId}
           const { data } = resp;
           setMessages(data.messages);
           initializeProjectId(data.messages[0].project_id)
+          setMessagesLoading(false);
        } catch (error: any) {
 
-        toast.error(error.response?.data?.message || INTERNAL_SERVER_ERROR_MESSAGE)
+        toast.error(error.response?.data?.message || INTERNAL_SERVER_ERROR_MESSAGE);
        }
       }
       getAllMessages();
@@ -171,7 +173,8 @@ const ChatBox = ({ chatId, openImageDialog, openAudioDialog,initializeProjectId}
          <div className="flex-1 flex flex-col">
         {/* Chat area */}
         <div className="flex-1 p-4 overflow-y-auto ml-5 mr-5">
-        {messages &&  messages.map((message: Message) => (
+          {messagesLoading && <MessageListSkeleton />}
+        {!messagesLoading &&  messages &&  messages.map((message: Message) => (
             <div key={message.id} className={`flex ${message.role === 'assistant' ? 'justify-end' : 'justify-start'} mb-4`}>
               <div className={`flex items-start ${message.role === 'assistant' ? 'flex-row-reverse' : ''} max-w-[80%]`}>
                 <div className={`rounded-full p-2 flex-shrink-0`}>

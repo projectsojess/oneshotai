@@ -95,7 +95,7 @@ const ImageDialog: React.FC<ImageDialogProps> = ({ isOpen, onClose, prompt, mode
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="w-full max-w-[90vw] h-[90vh] max-h-[90vh] overflow-y-auto bg-gray-800 border border-gray-700 p-4">
+      <DialogContent className="w-full max-w-[90vw] h-[90vh] max-h-[90vh] overflow-y-auto bg-gray-800 border border-gray-700 p-4 text-gray-300">
         <Tabs defaultValue='generate' className="w-full mt-7">
         <TabsList className="grid w-full grid-cols-2 bg-gray-700 p-1 rounded-lg">
           <TabsTrigger value="generate"  className="data-[state=active]:bg-gray-800 data-[state=active]:text-white">Generate Image</TabsTrigger>

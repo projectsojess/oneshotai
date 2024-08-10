@@ -18,7 +18,10 @@ export async function  PUT(request: NextRequest) {
 
         
 
-        var imgBase64s : string[] = [];
+        var imgBase64s : {
+            id?:string,
+            base64: string
+        }[] = [];
         const formData = await request.formData();
         const image = formData.get('image') as File;
 
@@ -74,7 +77,10 @@ export async function  PUT(request: NextRequest) {
                 },
               );
     
-              imgBase64s = [response.data.image];
+              imgBase64s = [{
+                id:'',
+                base64: response.data.image
+              }];
         }else {
             imgBase64s = imageData;
         }

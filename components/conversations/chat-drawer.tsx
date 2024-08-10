@@ -62,7 +62,7 @@ const ChatDrawer = ({pinnedItems } : {pinnedItems: any[]}) => {
             <DrawerTitle className="text-xl font-semibold">Chat Information</DrawerTitle>
           </DrawerHeader>
           <div className="flex h-[500px]">
-            <div className="w-1/4 border-r border-gray-800">
+            <div className="w-1/4 border-r border-gray-800 p-4">
               <Button 
                 variant={activeTab === 'pinned' ? 'secondary' : 'ghost'}
                 onClick={() => setActiveTab('pinned')}
@@ -74,7 +74,7 @@ const ChatDrawer = ({pinnedItems } : {pinnedItems: any[]}) => {
               <Button 
                 variant={activeTab === 'files' ? 'secondary' : 'ghost'}
                 onClick={() => setActiveTab('files')}
-                className="w-full justify-start py-6 text-left"
+                className="w-full justify-start py-6 text-left mt-2"
               >
                 <Files className="w-5 h-5 mr-2" />
                 Files
@@ -83,7 +83,14 @@ const ChatDrawer = ({pinnedItems } : {pinnedItems: any[]}) => {
             <div className="w-3/4">
               {activeTab === 'pinned' && (
                 <ScrollArea className="h-full p-4">
-                  {pinnedItems &&  pinnedItems.map((item) => (
+                  {pinnedItems.length ===0 && (
+                    <div className="flex flex-col items-center justify-center h-full text-gray-400">
+                      <Pin className="w-12 h-12 mb-4 text-blue-500" />
+                      <p className="text-lg font-semibold">No pinned items yet</p>
+                      <p className="text-sm mt-2">Pin important messages or files to access them quickly.</p>
+                    </div>
+                  )}
+                  {pinnedItems && pinnedItems.length !==0 &&  pinnedItems.map((item) => (
                     <Card key={item.id} className="mb-4 bg-gray-800 border-gray-700">
                       <CardContent className="p-4 flex items-start">
                         <div>

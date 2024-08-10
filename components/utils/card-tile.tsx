@@ -10,6 +10,14 @@ interface CardTileProps {
   handleClick? : () => void
 }
 const CardTile = ({ title, description, isButton = false,handleClick }: CardTileProps) => {
+
+  const truncateText = (text: string, maxLength: number) => {
+    if (text && text.length > maxLength) {
+      return text.substring(0, maxLength) + '...';
+    }
+    return text;
+  };
+  
     if (isButton) {
         return (
           <Card 
@@ -28,14 +36,17 @@ const CardTile = ({ title, description, isButton = false,handleClick }: CardTile
       }
     
       return (
-        <Card className="w-[200px] h-[120px] cursor-pointer hover:bg-gray-100 transition-colors rounded-lg"
-        onClick={handleClick}
-        >
-          <CardHeader>
-            <CardTitle>{title}</CardTitle>
-            <CardDescription>{description}</CardDescription>
-          </CardHeader>
-        </Card>
+        <Card 
+      className="w-[200px] h-[120px] cursor-pointer hover:bg-gray-100 transition-colors rounded-lg overflow-hidden"
+      onClick={handleClick}
+    >
+      <CardHeader className="h-full flex flex-col justify-between">
+        <CardTitle className='text-xl truncate'>{truncateText(title || '', 20)}</CardTitle>
+        <CardDescription className='line-clamp-2 overflow-hidden'>
+          {truncateText(description || '', 50)}
+        </CardDescription>
+      </CardHeader>
+    </Card>
       );
     };
 

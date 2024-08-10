@@ -57,8 +57,8 @@ const ChatSidebar = ({selectedChatId} : { selectedChatId :string}) => {
             {isChatLoading && <AllChatsSkeleton />}
             {!isChatLoading && projects && projects.map((project) => (
                 <div key={project.projectId} className="mb-4">
-                    <div className="flex items-center mb-2">
-                        <Folder size={18} className="mr-2" />
+                    <div className="flex items-start mb-2 ">
+                        <Folder size={18} className="mr-2 mt-1" />
                         <h2 className="text-lg font-semibold">{project.project}</h2>
                     </div>
                     
