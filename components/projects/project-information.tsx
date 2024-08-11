@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Pin, Paperclip, Plus, X, Download, Files, Image, FileText, Video, FileAudio, FileVideo, Check, Copy, AudioLinesIcon } from 'lucide-react';
+import { Pin, Paperclip, X, Download, Files, Image, Video, FileAudio, FileVideo, Check, Copy, AudioLinesIcon } from 'lucide-react';
 import {
   Tooltip,
   TooltipContent,
@@ -101,6 +101,9 @@ const ProjectInformation = ({projectId, pinnedItems, itemsLoading, files, attach
     await downloadFile(attachment.url, attachment.name);
   };
 
+  /*
+  HOW TO HANDLE FILE: SAVE IT IN BUCKET, GET THE URL, SAVE THE URL IN DB
+  */
   return (
     <TooltipProvider>
       <Card className="w-full max-w-md shadow-lg border-0">
@@ -240,12 +243,7 @@ const ProjectInformation = ({projectId, pinnedItems, itemsLoading, files, attach
         </div>
       ))}
               </ScrollArea>
-              <div className="p-4 border-t border-gray-200">
-                <Button onClick={handleAddAttachment} className="w-full bg-indigo-500 hover:bg-indigo-600 text-white">
-                  <Plus className="w-4 h-4 mr-2" />
-                  Add New File
-                </Button>
-              </div>
+
             </TabsContent>
           </Tabs>
         </CardContent>

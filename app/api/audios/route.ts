@@ -37,7 +37,8 @@ export async function POST(request: NextRequest) {
         if(id){
 
             const fileNameS3 = `${id}.mp3`;
-            const path = `${user.id}/AUDIOS/${fileNameS3}`;
+            const path = projectId && chatId ? `${user.id}/${projectId}/${chatId}/AUDIOS/${fileNameS3}` 
+            : projectId && !chatId ? `${user.id}/${projectId}/AUDIOS/${fileNameS3}`: `${user.id}/${chatId}/AUDIOS/${fileNameS3}` ;
     
             const { data, error } = await supabase.storage
                                     .from('onestopai-bucket') 
