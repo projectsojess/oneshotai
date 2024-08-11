@@ -9,8 +9,9 @@ export async function GET(request: NextRequest) {
         const { searchParams } = new URL(request.url);
 
         const chatId = searchParams.get("chatId");
+        const projectId = searchParams.get("projectId");
 
-        if(!chatId ){
+        if(!chatId && !projectId){
 
             return NextResponse.json({
                 message: INVALID_REQUEST
@@ -19,24 +20,52 @@ export async function GET(request: NextRequest) {
 
         const supabase = createServer();
 
-        const { data, error } = await supabase.from("chat_messages")
-                                .select("id,chat_pinned,project_pinned, content, model")
-                                .eq("chat_id", chatId).eq('chat_pinned',true);
-        if(error){
+        if(chatId){
 
-            return NextResponse.json({
+            const { data, error } = await supabase.from("chat_messages")
+                .select("id,chat_pinned,project_pinned, content, model")
+                .eq("chat_id", chatId).eq('chat_pinned',true);
+
+            if(error){
+
+                return NextResponse.json({
                 message: INTERNAL_SERVER_ERROR_MESSAGE,
-            },{status:500});
+                },{status:500});
+            }
+
+            const pinnedData = data.map( (item) => ({
+                ...item,
+                type:'message'
+            }));
+    
+            return NextResponse.json({
+                pinnedItems: pinnedData,
+            },{status:200});
+
+        }
+        if(projectId){
+
+            const { data, error } = await supabase.from("chat_messages")
+                .select("id,chat_pinned,project_pinned, content, model")
+                .eq("project_id", projectId).eq('project_pinned',true);
+
+            if(error){
+
+                return NextResponse.json({
+                message: INTERNAL_SERVER_ERROR_MESSAGE,
+                },{status:500});
+            }
+
+            const pinnedData = data.map( (item) => ({
+                ...item,
+                type:'message'
+            }));
+    
+            return NextResponse.json({
+                pinnedItems: pinnedData,
+            },{status:200});
         }
 
-        const pinnedData = data.map( (item) => ({
-            ...item,
-            type:'message'
-        }));
-
-        return NextResponse.json({
-            pinnedItems: pinnedData,
-        },{status:200});
     } catch (error) {
         
         logger.error("Error fetching pinned messages")

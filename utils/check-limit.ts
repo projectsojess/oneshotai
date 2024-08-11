@@ -8,21 +8,21 @@ export const checkUserLimit = async (model: string) =>{
 
 
     const supabase = createServer();
-    const cost = fetchCostData(model,supabase);
+    const cost = await fetchCostData(model,supabase);
     if(!cost){
         throw new Error("Cost is not defined")
     }
 
-    const { availableCredits } = await getUserPlanServer();
+    const { available_credits } = await getUserPlanServer();
     
-    if(!availableCredits){
+    if(!available_credits){
         throw new Error("Available Credits is not defined")
     }
-    return cost < availableCredits;
+    return cost < available_credits;
 }
 
 const fetchCostData = unstable_cache(
-    async (model: string,supabase: SupabaseClient) => {
+    async (model: string,supabase: SupabaseClient): Promise<number | null> => {
 
         const { data, error } = await supabase.from("ai_models")
             .select('credits_per_request')
@@ -33,7 +33,7 @@ const fetchCostData = unstable_cache(
             return null;
         }
 
-        return data[0];
+        return data[0]?.credits_per_request ?? null;;
     },
     ['ai-models-model'],  // cache key prefix
     { revalidate: 86400, tags: ['ai-models-model'] }  // cache options, 86400 seconds = 1 day

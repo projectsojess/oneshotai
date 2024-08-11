@@ -58,8 +58,19 @@ const ChatSidebar = ({selectedChatId} : { selectedChatId :string}) => {
             {!isChatLoading && projects && projects.map((project) => (
                 <div key={project.projectId} className="mb-4">
                     <div className="flex items-start mb-2 ">
-                        <Folder size={18} className="mr-2 mt-1" />
-                        <h2 className="text-lg font-semibold">{project.project}</h2>
+                            <Link
+                                href='#'
+                                key={project.projectId}
+                                className={cn('flex items-center w-full p-2 rounded-lg transition-colors',
+                                )}
+                                onClick={(e) => {
+                                    e.preventDefault();
+                                    router.push(`/projects/${project.projectId}`)
+                                }}
+                            >
+                            <Folder size={18} className="mr-2 mt-1" />
+                            <h2 className="text-lg font-semibold">{project.project}</h2>
+                            </Link>
                     </div>
                     
                     <div className="space-y-2 ml-4">

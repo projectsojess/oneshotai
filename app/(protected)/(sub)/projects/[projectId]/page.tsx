@@ -46,7 +46,7 @@ const ProjectPage = ({params} : {params : {projectId: string}}) => {
         {/* Project Information for larger screens */}
         <div className="hidden lg:block lg:w-1/3">
           <ProjectInformation 
-            // projectId={params.projectId}
+            projectId={params.projectId}
             // pinnedMessages={project.pinnedMessages || []}
             // attachments={project.attachments || []}
           />
@@ -64,7 +64,7 @@ const ProjectPage = ({params} : {params : {projectId: string}}) => {
               <X className="h-6 w-6" />
             </Button>
             <ProjectInformation 
-              // projectId={params.projectId}
+              projectId={params.projectId}
               // pinnedMessages={project.pinnedMessages || []}
               // attachments={project.attachments || []}
             />

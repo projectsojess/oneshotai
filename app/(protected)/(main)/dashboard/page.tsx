@@ -44,8 +44,8 @@ const onClick = (projectId) => {
         title='Dashboard'
         description='Comprehensive AI Content Platform'
         icon={LayoutDashboard}
-        iconColor='text-black-500'
-        bgColor='bg-black-500/10'
+        iconColor='text-sky-500'
+        bgColor='bg-sky-500/10'
       />
        <div className='flex items-center mb-2 mx-8'>
         <Folder className='w-7 h-7 mr-2' />

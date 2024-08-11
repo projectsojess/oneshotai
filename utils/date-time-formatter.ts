@@ -25,3 +25,18 @@ export function formatDate(isoString: string): string {
   // Usage example:
   // const readableDate = formatDate('2024-08-07 13:27:17.997996+00');
   // console.log(readableDate); // Output: August 7, 2024 at 01:27 PM
+
+
+
+  export function isToday(dateString) {
+    // Parse the input date string
+    const inputDate = new Date(dateString);
+    
+    // Get today's date
+    const today = new Date();
+    
+    // Compare year, month, and day
+    return inputDate.getUTCFullYear() === today.getUTCFullYear() &&
+           inputDate.getUTCMonth() === today.getUTCMonth() &&
+           inputDate.getUTCDate() === today.getUTCDate();
+  }

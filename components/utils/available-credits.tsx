@@ -6,8 +6,9 @@ import { Button } from "@/components/ui/button";
 import { Zap } from "lucide-react";
 import PremiumProgress from "@/components/utils/premium-progress";
 import { useProModal } from "@/hooks/use-pro-modal";
-import { getUserPlanClient } from "@/hooks/use-user";
 import SkeletonAvailableCredits from "../skeletons/utils/skeleton-available-credits";
+import { getUserPlanClient } from "@/hooks/use-user";
+import { Plan } from "@/types/plan";
 
 
 const AvailableCredits = () => {
@@ -21,7 +22,7 @@ const AvailableCredits = () => {
         setMounted(true)
         const getPlan = async() => {
 
-          const plan = await getUserPlanClient();
+          const plan :Plan = await getUserPlanClient();
 
           setPlan(plan);
           setLoading(false);
@@ -40,12 +41,12 @@ const AvailableCredits = () => {
         <Card className="bg-white/10 border-0"> 
         <CardContent className="py-6">
             <div className=" text-center text-sm text-white mb-2 space-y-2">
-                <p>{plan.availableCredits} of {plan.totalCredits} Credits left</p>
-                <PremiumProgress value={(plan.availableCredits/plan.totalCredits) * 100} />
+                <p>{plan.available_credits} of {plan.total_credits} Credits left</p>
+                <PremiumProgress value={(plan.available_credits/plan.total_credits) * 100} />
             </div>
-            {plan.type && (plan.type ==='FREE' || 'PRO') && (
+            {plan.plan && (plan.plan ==='FREE' || plan.plan === 'PRO') && (
                 <Button className="w-full mt-2" variant="premium" onClick={proModal.onOpen}>
-                    Upgrade to {plan.type === 'FREE' ? 'PRO' : 'PREMIUM'} <Zap className="h-4 w-4 ml-2 fill-white"/>
+                    Upgrade to {plan.plan === 'FREE' ? 'PRO' : 'PREMIUM'} <Zap className="h-4 w-4 ml-2 fill-white"/>
                 </Button>
             )}
         </CardContent>

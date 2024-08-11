@@ -14,6 +14,7 @@ const ChatPage = ({params} : {params : {chatId: string}}) => {
     const [isAudioDialogOpen, setIsAudioDialogOpen] = useState(false);
     const [selectedPrompt, setSelectedPrompt] = useState('');
     const [projectId, setProjectId ] = useState('');
+    const [plan, setPlan ] = useState('');
 
     const [models, setModels ] = useState([]);
     useEffect(() => {
@@ -33,12 +34,14 @@ const ChatPage = ({params} : {params : {chatId: string}}) => {
       getAllModels();
     },[])
 
-   const openImageDialog = (prompt: string) => {
+   const openImageDialog = (prompt: string, plan: string) => {
+    setPlan(plan);
     setSelectedPrompt(prompt);
     setIsImageDialogOpen(true);
   }
 
-  const openAudioDialog = (prompt: string) => {
+  const openAudioDialog = (prompt: string, plan: string) => {
+    setPlan(plan);
     setSelectedPrompt(prompt);
     setIsAudioDialogOpen(true);
   }
@@ -52,6 +55,7 @@ const ChatPage = ({params} : {params : {chatId: string}}) => {
             {isImageDialogOpen && (
         <div className='fixed inset-0 z-50'>
         <ImageDialog
+          plan={plan}
           isOpen={isImageDialogOpen}
           onClose={() => setIsImageDialogOpen(false)}
           prompt={selectedPrompt}

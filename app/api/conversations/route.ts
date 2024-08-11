@@ -72,12 +72,13 @@ export async function POST(request: NextRequest) {
         const chatId = data[0].id;
         const allMessages  = [...splitMessages, choices[0].message];
 
-        const messageData = allMessages.map((message) => ({
+        const messageData = allMessages.map((message,index) => ({
             role: message.role,
             project_id:projectId,
             content:message.content,
             chat_id: chatId,
-            model: validValues.model
+            model: validValues.model,
+            order: index +1
 
         }))
         const resp = await supabase.from("chat_messages")

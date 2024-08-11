@@ -16,10 +16,13 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { Pin, Files, X, Copy, Image, FileAudio, FileVideo, Check, Info } from 'lucide-react';
+import { Badge } from '../ui/badge';
+import { useProModal } from '@/hooks/use-pro-modal';
 
-const ChatDrawer = ({pinnedItems } : {pinnedItems: any[]}) => {
+const ChatDrawer = ({pinnedItems,plan } : {pinnedItems: any[],plan: string}) => {
   const [activeTab, setActiveTab] = useState('pinned');
   const [copiedId, setCopiedId] = useState(null);
+  const promodal = useProModal();
 
   const attachments = [
     { id: 1, type: 'image', name: 'mockup.png', size: '2.4 MB', date: '2023-07-28' },
@@ -87,7 +90,8 @@ const ChatDrawer = ({pinnedItems } : {pinnedItems: any[]}) => {
                     <div className="flex flex-col items-center justify-center h-full text-gray-400">
                       <Pin className="w-12 h-12 mb-4 text-blue-500" />
                       <p className="text-lg font-semibold">No pinned items yet</p>
-                      <p className="text-sm mt-2">Pin important messages or files to access them quickly.</p>
+                      {plan ==='PREMIUM' && <p className="text-sm mt-2">Pin important messages or files to access them quickly.</p>}
+                      {plan !=='PREMIUM' && <Badge variant='premium' className='text-xl p-4 mt-4 cursor-pointer' onClick={promodal.onOpen}> Upgrade to premium to unlock this feature</Badge>}
                     </div>
                   )}
                   {pinnedItems && pinnedItems.length !==0 &&  pinnedItems.map((item) => (

@@ -1,5 +1,5 @@
+
 import { apiConfig } from '@/config/api-config'
-import { appConfig } from '@/config/app-config'
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
@@ -42,7 +42,7 @@ export async function updateSession(request: NextRequest) {
   const isAuthRoutes = apiConfig.authRoutes.includes(request.nextUrl.pathname);
 
   if(!user && !(isApiAuthRoute || isPublicRoutes || isAuthRoutes)) {
-
+    console.log('no user')
     const url = request.nextUrl.clone();
     url.pathname = '/auth/login';
     return NextResponse.redirect(url);
@@ -51,7 +51,7 @@ export async function updateSession(request: NextRequest) {
   if( user && (isApiAuthRoute || isAuthRoutes)) {
 
     const url = request.nextUrl.clone();
-    url.pathname = appConfig.defaultRedirectUrl;
+    url.pathname = "/dashboard";
     return NextResponse.redirect(url);
   }
 

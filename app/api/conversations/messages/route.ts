@@ -12,6 +12,7 @@ export async function POST(request: NextRequest) {
         const {chatId , messages, model, projectId }= await request.json();
         const userPrompt = messages[messages.length -1];
 
+        const messageLength = messages.length-1;
 
         const supabase = createServer();
 
@@ -32,12 +33,13 @@ export async function POST(request: NextRequest) {
         const {choices } = openAiResp;
         const allMessages = [userPrompt,choices[0].message];
 
-        const messageData = allMessages.map((message) => ({
+        const messageData = allMessages.map((message,index) => ({
             role: message.role,
             project_id:projectId,
             content:message.content,
             chat_id: chatId,
-            model: model
+            model: model,
+            order: index+ 1 + messageLength
 
         }));
 

@@ -16,6 +16,10 @@ import { INTERNAL_SERVER_ERROR_MESSAGE } from '@/constants/error-messages';
 import { MessageRenderer } from './message-renderer';
 import ChatDrawer from './chat-drawer';
 import MessageListSkeleton from '../skeletons/conversations/message-list-skeleton';
+import { Plan } from '@/types/plan';
+import { getUserPlanClient } from '@/hooks/use-user';
+import { Badge } from '../ui/badge';
+import { useProModal } from '@/hooks/use-pro-modal';
 
  
 interface Message {
@@ -28,8 +32,8 @@ interface Message {
 }
 interface ChatBoxProps {
   chatId: string;
-  openImageDialog: (prompt: string) => void;
-  openAudioDialog: (prompt: string) => void;
+  openImageDialog: (prompt: string, plan:string) => void;
+  openAudioDialog: (prompt: string,plan: string) => void;
   initializeProjectId: (projectId: string) => void;
 }
 
@@ -37,6 +41,9 @@ interface ChatBoxProps {
 const ChatBox = ({ chatId, openImageDialog, openAudioDialog,initializeProjectId} : ChatBoxProps) => {
 
   const [pinnedItems, setPinnedItems ] = useState([]);
+  const [plan, setPlan] = useState<Plan>(null);
+  const proModal = useProModal();
+
   useEffect(() => {
 
     const getAllPinnedItems = async() => {
@@ -79,6 +86,11 @@ const ChatBox = ({ chatId, openImageDialog, openAudioDialog,initializeProjectId}
   };
   const pinMessage = async (id: string, chat:boolean, project:boolean)=> {
 
+    if(plan.plan !=='PREMIUM'){
+
+      proModal.onOpen();
+      return;
+    }
     try {
         const resp = await axios.put("/api/conversations/pinned",{
           messageId : id,
@@ -92,9 +104,7 @@ const ChatBox = ({ chatId, openImageDialog, openAudioDialog,initializeProjectId}
           addPinnedItem(data.pinnedItem);
         }
         updateMessagePinnedStatus(id,chat,project);
-        toast.success(`Message pinned successfully. ${ chat ? 'Open chat info section to see your pinned messages' :
-          ''
-        }`);
+        toast.success(`Message pinned successfully.`);
         
     } catch (error) {
       
@@ -118,6 +128,9 @@ const ChatBox = ({ chatId, openImageDialog, openAudioDialog,initializeProjectId}
 
       const getAllMessages = async () => {
         try {
+          const plan: Plan = await getUserPlanClient();
+          setPlan(plan);
+
           const resp = await axios.get(`/api/conversations/${chatId}`);
           const { data } = resp;
           setMessages(data.messages);
@@ -197,10 +210,11 @@ const ChatBox = ({ chatId, openImageDialog, openAudioDialog,initializeProjectId}
                         <DropdownMenuItem>
                         <Button 
                         variant='ghost'
-                        onClick={() => pinMessage(message.id,true,false)}
+                        onClick={() => pinMessage(message.id,true,message.project_pinned)}
                         >
                           <PinIcon className="mr-2 h-4 w-4 text-blue-500"/>
                           <span>Pin to Chat</span>
+                          {plan.plan !== 'PREMIUM' && <Badge variant='premium' className='ml-2'> PREMIUM</Badge>}
                         </Button>
                       </DropdownMenuItem>
                       )}
@@ -208,27 +222,30 @@ const ChatBox = ({ chatId, openImageDialog, openAudioDialog,initializeProjectId}
                         <DropdownMenuItem>
                         <Button 
                         variant='ghost'
-                        onClick={() => pinMessage(message.id,false,true)}
+                        onClick={() => pinMessage(message.id,message.chat_pinned,true)}
                         >
                           <PinIcon className="mr-2 h-4 w-4 text-yellow-500"/>
                           <span>Pin to Project</span>
+                          {plan.plan !== 'PREMIUM' && <Badge variant='premium' className='ml-2'> PREMIUM</Badge>}
                         </Button>
                       </DropdownMenuItem>
                       )}
                       <DropdownMenuItem>
                         <Button 
                         variant='ghost'
-                        onClick={() => openImageDialog(message.content)}
+                        onClick={() => openImageDialog(message.content, plan.plan)}
                         >
                           <ImageIcon className="mr-2 h-4 w-4 text-red-500"/><span> Generate Image</span>
+                          {plan.plan === 'FREE' && <Badge variant='premium' className='ml-2'> PRO</Badge>}
                         </Button>
                       </DropdownMenuItem>
                       <DropdownMenuItem>
                         <Button 
                         variant='ghost'
-                        onClick={() => openAudioDialog(message.content)}
+                        onClick={() => openAudioDialog(message.content,plan.plan)}
                         >
                           <AudioLinesIcon className="mr-2 h-4 w-4 text-green-500"/><span> Generate Audio</span>
+                          {plan.plan === 'FREE' && <Badge variant='premium' className='ml-2'> PRO</Badge>}
                         </Button>
                       </DropdownMenuItem>
                       <DropdownMenuItem>
@@ -247,7 +264,7 @@ const ChatBox = ({ chatId, openImageDialog, openAudioDialog,initializeProjectId}
             </div>
           ))}
           <div ref={messagesEndRef} />
-          <ChatDrawer pinnedItems={pinnedItems}/>
+          <ChatDrawer pinnedItems={pinnedItems} plan={plan?.plan}/>
         </div>
         <div className="p-4 border-t bg-gray-100">
           <Form {...form}>

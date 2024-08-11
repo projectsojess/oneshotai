@@ -22,6 +22,8 @@ import { MODEL_CONFIGS, VARIATIONS } from '@/constants/app-constants';
 import { AiOutlineLoading3Quarters } from 'react-icons/ai';
 import { cn } from '@/lib/utils';
 import ImageComponent from './image-component';
+import { Badge } from '../ui/badge';
+import { useProModal } from '@/hooks/use-pro-modal';
 
 
 interface ImageDialogProps {
@@ -30,13 +32,15 @@ interface ImageDialogProps {
   prompt: string;
   models: { value: string; name: string }[];
   projectId: string,
-  chatId: string
+  chatId: string,
+  plan: string
 }
 
-const ImageDialog: React.FC<ImageDialogProps> = ({ isOpen, onClose, prompt, models, projectId, chatId }) => {
+const ImageDialog: React.FC<ImageDialogProps> = ({ isOpen, onClose, prompt, models, projectId, chatId,plan }: ImageDialogProps) => {
   const [isEditing, setIsEditing] = useState(false);
   const [editablePrompt, setEditablePrompt] = useState(prompt);
   const [generatedImages, setGeneratedImages] = useState([]);
+  const promodal = useProModal();
 
   const form = useForm<z.infer<typeof ImagePromptSchema>>({
     resolver: zodResolver(ImagePromptSchema),
@@ -50,6 +54,10 @@ const ImageDialog: React.FC<ImageDialogProps> = ({ isOpen, onClose, prompt, mode
   const isLoading = form.formState.isSubmitting;
 
   const onSubmit = async (values: z.infer<typeof ImagePromptSchema>) => {
+    if(plan ==='FREE'){
+      promodal.onOpen();
+      return;
+    }
     try {
       const  resp = await axios.post("/api/image-generation/image", {
         prompt : values.prompt.trim(),
@@ -225,6 +233,7 @@ const ImageDialog: React.FC<ImageDialogProps> = ({ isOpen, onClose, prompt, mode
                 <Wand2 className="w-5 h-5" />
                 Generate Image 
                 <AiOutlineLoading3Quarters className={cn(!isLoading ?  "hidden" : "block animate-spin ml-2 w-4 h-4")}/>
+                {plan === 'FREE' && <Badge variant='premium' className='ml-2'> PRO</Badge>}
               </Button>
             </div>
           </form>

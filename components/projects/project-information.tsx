@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Pin, Paperclip, Plus, X, Download, Files, Image, FileText, Video } from 'lucide-react';
+import { Pin, Paperclip, Plus, X, Download, Files, Image, FileText, Video, FileAudio, FileVideo, Check, Copy } from 'lucide-react';
 import { Badge } from "@/components/ui/badge";
 import {
   Tooltip,
@@ -11,13 +11,37 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import axios from 'axios';
+import { INTERNAL_SERVER_ERROR_MESSAGE } from '@/constants/error-messages';
+import toast from 'react-hot-toast';
+import { PinnedItemsSkeleton } from '../skeletons/projects/pinned-skeleton';
 
-const ProjectInformation = () => {
-  const [pinnedMessages, setPinnedMessages] = useState([
-    { id: 1, content: "Remember to update the API documentation", author: "John Doe", date: "2023-08-01", important: true },
-    { id: 2, content: "Client meeting scheduled for next Tuesday", author: "Jane Smith", date: "2023-08-03", important: false },
-  ]);
+const ProjectInformation = ({projectId}: {projectId: string}) => {
 
+  const [pinnedMessages, setPinnedMessages] = useState([]);
+  const [pinnedItems, setPinnedItems] = useState([]);
+  const [itemsLoading, setItemsLoading ] = useState(true);
+  const [copiedId, setCopiedId] = useState(null);
+  useEffect(() => {
+
+    const getAllPinnedItems = async() => {
+
+        try {
+            const resp = await axios.get("/api/conversations/pinned",{
+                params: {projectId}
+            })
+            const { data } = resp;
+
+            setPinnedItems(data.pinnedItems);
+            setItemsLoading(false);
+        } catch (error) {
+            
+            toast.error(error.response?.data?.message || INTERNAL_SERVER_ERROR_MESSAGE)
+        }
+    }
+    getAllPinnedItems();
+  },[]);
+  
   const [attachments, setAttachments] = useState([
     { id: 1, type: 'image', name: 'mockup.png', size: '2.4 MB', date: '2023-07-28', url: '/api/placeholder/100/100' },
     { id: 2, type: 'pdf', name: 'project_brief.pdf', size: '1.2 MB', date: '2023-07-30', url: '#' },
@@ -44,7 +68,24 @@ const ProjectInformation = () => {
       default: return <Paperclip className="w-6 h-6 text-gray-500" />;
     }
   };
+  const getItemIcon = (type) => {
+    switch(type) {
+      case 'message': return <Pin className="w-5 h-5 text-blue-400" />;
+      case 'audio': return <FileAudio className="w-5 h-5 text-green-400" />;
+      case 'image': return <Image className="w-5 h-5 text-purple-400" />;
+      case 'video': return <FileVideo className="w-5 h-5 text-red-400" />;
+      default: return <Pin className="w-5 h-5 text-blue-400" />;
+    }
+  };
 
+  const copyToClipboard = (id, content) => {
+    navigator.clipboard.writeText(content).then(() => {
+      setCopiedId(id);
+      setTimeout(() => setCopiedId(null), 2000);
+    }).catch(err => {
+      console.error('Failed to copy: ', err);
+    });
+  };
   return (
     <TooltipProvider>
       <Card className="w-full max-w-md shadow-lg border-0">
@@ -68,29 +109,66 @@ const ProjectInformation = () => {
             </TabsList>
             <TabsContent value="pinned" className="mt-0">
               <ScrollArea className="h-[400px] p-4">
-                {pinnedMessages.map((message) => (
-                  <div key={message.id} className="mb-4 p-4 bg-purple-50 rounded-lg border border-purple-200 shadow-sm hover:shadow-md transition-shadow duration-200">
-                    <p className="text-sm mb-2 text-gray-700">{message.content}</p>
-                    <div className="flex justify-between items-center text-xs text-gray-500">
-                      <span className="flex items-center">
-                        <Badge variant={message.important ? "destructive" : "secondary"} className="mr-2">
-                          {message.important ? "Important" : "Info"}
-                        </Badge>
-                        {message.author} • {message.date}
-                      </span>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <Button variant="ghost" size="sm" onClick={() => handleUnpinMessage(message.id)} className="hover:bg-purple-200">
-                            <X className="w-4 h-4" />
-                          </Button>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p>Unpin message</p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </div>
-                  </div>
-                ))}
+                {itemsLoading && (
+                  <PinnedItemsSkeleton />
+                )}
+                {!itemsLoading && pinnedItems && pinnedItems.length == 0 && (
+                   <div className="flex flex-col items-center justify-center h-full">
+                   <Pin className="w-12 h-12 mb-4 text-blue-500" />
+                   <p className="text-lg font-semibold">No pinned items yet</p>
+                    <p className="text-sm mt-2">Pin important messages or files to access them quickly.</p>
+                 </div>
+                )}
+                 {!itemsLoading && pinnedItems && pinnedItems.length !==0 &&  pinnedItems.map((item) => (
+                    <Card key={item.id} className="mb-4">
+                      <CardContent className="p-4 flex items-start">
+                        <div>
+                            {getItemIcon(item.type)}
+                        </div>
+                        <div className="ml-3 flex-grow">
+                          <p className="text-sm line-clamp-4">{item.content}</p>
+                        </div>
+                        <div className="flex ml-2">
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button 
+                                variant="ghost" 
+                                size="sm" 
+                                className={`  transition-all duration-200 ${copiedId === item.id ? 'bg-green-600 text-white hover:bg-green-700 hover:text-white' : ''}`}
+                                onClick={() => copyToClipboard(item.id, item.content)}
+                              >
+                                {copiedId === item.id ? (
+                                  <>
+                                    <Check className="w-4 h-4 mr-1" />
+                                    <span className="text-xs">Copied</span>
+                                  </>
+                                ) : (
+                                  <Copy className="w-4 h-4" />
+                                )}
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>{copiedId === item.id ? "Copied!" : "Copy content"}</p>
+                            </TooltipContent>
+                          </Tooltip>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button 
+                                variant="ghost" 
+                                size="sm" 
+                                className=""
+                              >
+                                <X className="w-4 h-4" />
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>Unpin item</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
               </ScrollArea>
             </TabsContent>
             <TabsContent value="attachments" className="mt-0">

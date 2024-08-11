@@ -1,71 +1,97 @@
 import { useProModal } from "@/hooks/use-pro-modal"
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { Badge } from "@/components/ui/badge";
-import { Coins, Zap, Image, AudioWaveformIcon, Sparkles, CoinsIcon, X } from "lucide-react";
+import { Zap, CheckIcon } from "lucide-react";
 import { Button } from "../ui/button";
-import axios from "axios";
-import { useRef, useState } from "react";
-import { FaRupeeSign } from "react-icons/fa";
-import GradientIcon from "./gradient-icon";
+import { useEffect, useState } from "react";
+import PayPalSubscriptionButton from "../payments/paypal-subscription-button";
+import { cn } from "@/lib/utils";
+import { appData } from "@/constants/app-data";
 
-const features = [
-    { text: "Purchase additional credits if exhausted", icon: CoinsIcon, isGold: true },
-    { text: "Pro Image Features", icon: Image },
-    { text: "Pro Audio Features", icon: AudioWaveformIcon },
-    { text: "Early access to new features", icon: Sparkles }
-  ];
   
 const ProModal = () => {
     const proModal = useProModal();
     const [loading, setLoading ] = useState(false);
+    const [showPayPal, setShowPayPal] = useState(false);
+    const [selectedPlanId, setSelectedPlanId] = useState('');
+    const [selectedProductId, setSelectedProductId] = useState('');
 
-    const createOrder = async () => {
-      setLoading(true);
-     
-      // TODO
+    const handleUpgradeClick = (planId: string, productId: string) => {
+      setSelectedPlanId(planId);
+      setSelectedProductId(productId);
+      setShowPayPal(true);
+    };
 
-    }
-
+    useEffect(() => {
+      if (!proModal.isOpen) {
+        setLoading(false);
+        setShowPayPal(false);
+        setSelectedPlanId('')
+        setSelectedProductId('')
+      }
+    }, [proModal.isOpen]);
   return (
     <Dialog open = {proModal.isOpen} onOpenChange={proModal.onClose} >
-        <DialogContent className="bg-gray-800 border-0 text-gray-300">
+        <DialogContent className="max-w-[95vw] max-h-[95vh] overflow-y-auto">
             <DialogHeader>
                 <DialogTitle className="flex justify-center items-center flex-col gap-y-4 pb-2">
                     <div className="flex items-center gap-x-2 font-bold py-1">
                         Upgrade to OneStopAi
-                        <Badge variant="premium" className="text-sm py-1">
-                            PRO
-                        </Badge>
                     </div>
                 </DialogTitle>
             </DialogHeader>
-            <DialogDescription className="text-center pt-2 space-y-2 text-zinc-900 font-medium text-gray-300">
-                Unlock the full potential of AI-powered creation
-                <div className="p-4">
-          <div className="bg-gradient-to-r from-sky-500 to-indigo-600 text-white rounded-lg p-4 mb-4 shadow-lg">
-            <div className="flex items-center justify-center gap-2 text-xl font-bold mb-2">
-              <GradientIcon Icon={Coins}  isGold={true}/>
-              2200 Credits Included
+            <DialogDescription className="text-black">
+            <div className='flex flex-col gap-6 items-center mt-10 lg:flex-row lg:items-end lg:justify-center'>
+                {appData.plans.map((plan,index) => (
+                    <div key={index} className={cn('p-10 rounded-3xl border border-secondary shadow-[0_7px_14px_#EAEAEA] max-w-sm w-full',
+                        index %2 !==0 && 'border-primary bg-primary text-secondary'
+                    )}>
+                        <div className='flex justify-between'>
+                            <h3 className={cn('text-lg font-bold ', 
+                                index% 2 !== 0 ? 'text-secondary' : 'text-primary/90'
+                            )}>{plan.name}</h3>
+                                {plan.isPopular && (
+                                    <div className='inline-flex text-sm px-4 py-1.5 rounded-xl border border-gray-900/90 bg-gray-900'>
+                                    <span className='bg-[linear-gradient(to_right,#DD7DDF,#E1CD86,#BBCB92,#71C2EF,#3BFFFF,#DD7DDF)] text-transparent bg-clip-text font-medium'>
+                                    {plan.popularText}
+                                    </span>
+                                </div>
+                                )}
+                        </div>
+                        <div className='flex items-baseline gap-1 mt-[30px] mb-6'>
+                            <span className='text-4xl font-bold tracking-tighter leading-none'>${plan.price}</span>
+                            <span>/{plan.recuring}</span>
+                        </div>
+                          {!showPayPal &&(
+                              <Button variant="premium" className="w-full border-0 " disabled={loading} onClick={() => handleUpgradeClick(plan.planId,plan.productId)}>
+                              Upgrade Now
+                              <Zap className="w-4 h-4 ml-2 fill-white" />
+                            </Button>
+                          )}
+                        <ul className='flex flex-col gap-5 mt-8'>
+                            {plan.features.map((feature, index) => (
+                                <li key={index} className='text-sm flex items-center gap-4'>
+                                    <CheckIcon  className='h-4 w-4'/>
+                                    <span>{feature}</span>
+                                </li>
+                            ))}
+                        </ul>
+                    </div>
+                ))}
             </div>
-            <p className="text-center text-sm">Use these credits for any AI task - images, audio, or conversations!</p>
-          </div>
-          <h3 className="font-semibold text-lg mb-4 text-left">What you'll get:</h3>
-          <ul className="space-y-3">
-            {features.map((feature, index) => (
-              <li key={index} className="flex items-center">
-                <GradientIcon Icon={feature.icon} isGold={feature.isGold}/>
-                <span className="ml-3">{feature.text}</span>
-              </li>
-            ))}
-          </ul>
-        </div>
-            </DialogDescription>
-            <DialogFooter >
-          <Button variant="premium" className="w-full border-0 " disabled={loading} onClick={createOrder}>
-          Upgrade Now
-          <Zap className="w-4 h-4 ml-2 fill-white" />
-        </Button>
-        </DialogFooter>
+          </DialogDescription>
+          {showPayPal && (
+           <DialogFooter className="flex items-center justify-center">
+              <div className="hidden md:block w-[25vw]">
+
+              </div>
+              <div className="w-full">
+              <PayPalSubscriptionButton  planId={selectedPlanId} productId={selectedProductId}/>
+              </div>
+              <div className="hidden md:block w-[25vw]">
+
+              </div>
+         </DialogFooter>
+          )}
         </DialogContent>
     </Dialog>
   )
