@@ -21,7 +21,8 @@ const ImageComponent = ({ imageData, index, projectId, chatId }) => {
       const resp = await axios.post("/api/images",{
         base64:imageData.base64,
         projectId,
-        chatId
+        chatId,
+        title:'test'
       });
       toast.success(resp.data?.message);
     } catch (error) {

@@ -1,47 +1,32 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Pin, Paperclip, Plus, X, Download, Files, Image, FileText, Video, FileAudio, FileVideo, Check, Copy } from 'lucide-react';
-import { Badge } from "@/components/ui/badge";
+import { Pin, Paperclip, Plus, X, Download, Files, Image, FileText, Video, FileAudio, FileVideo, Check, Copy, AudioLinesIcon } from 'lucide-react';
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import axios from 'axios';
-import { INTERNAL_SERVER_ERROR_MESSAGE } from '@/constants/error-messages';
-import toast from 'react-hot-toast';
 import { PinnedItemsSkeleton } from '../skeletons/projects/pinned-skeleton';
+import { FileAttachmentSkeleton } from '../skeletons/projects/files-skeleton';
 
-const ProjectInformation = ({projectId}: {projectId: string}) => {
+interface ProjectInformationProps {
+  projectId: string,
+  pinnedItems: any[],
+  itemsLoading: boolean,
+  files: any[]
+  attachmentsLoading: boolean
+}
+const ProjectInformation = ({projectId, pinnedItems, itemsLoading, files, attachmentsLoading}: ProjectInformationProps) => {
 
   const [pinnedMessages, setPinnedMessages] = useState([]);
-  const [pinnedItems, setPinnedItems] = useState([]);
-  const [itemsLoading, setItemsLoading ] = useState(true);
+
+
   const [copiedId, setCopiedId] = useState(null);
-  useEffect(() => {
 
-    const getAllPinnedItems = async() => {
-
-        try {
-            const resp = await axios.get("/api/conversations/pinned",{
-                params: {projectId}
-            })
-            const { data } = resp;
-
-            setPinnedItems(data.pinnedItems);
-            setItemsLoading(false);
-        } catch (error) {
-            
-            toast.error(error.response?.data?.message || INTERNAL_SERVER_ERROR_MESSAGE)
-        }
-    }
-    getAllPinnedItems();
-  },[]);
-  
   const [attachments, setAttachments] = useState([
     { id: 1, type: 'image', name: 'mockup.png', size: '2.4 MB', date: '2023-07-28', url: '/api/placeholder/100/100' },
     { id: 2, type: 'pdf', name: 'project_brief.pdf', size: '1.2 MB', date: '2023-07-30', url: '#' },
@@ -62,9 +47,9 @@ const ProjectInformation = ({projectId}: {projectId: string}) => {
 
   const getFileIcon = (type) => {
     switch(type) {
-      case 'image': return <Image className="w-6 h-6 text-blue-500" />;
-      case 'pdf': return <FileText className="w-6 h-6 text-red-500" />;
-      case 'video': return <Video className="w-6 h-6 text-green-500" />;
+      case 'IMAGES': return <Image className="w-6 h-6 text-blue-500" />;
+      case 'AUDIOS': return <AudioLinesIcon className="w-6 h-6 text-red-500" />;
+      case 'VIDEOS': return <Video className="w-6 h-6 text-green-500" />;
       default: return <Paperclip className="w-6 h-6 text-gray-500" />;
     }
   };
@@ -77,6 +62,12 @@ const ProjectInformation = ({projectId}: {projectId: string}) => {
       default: return <Pin className="w-5 h-5 text-blue-400" />;
     }
   };
+  const formatFileSize = (bytes) => {
+    if (bytes < 1024) return bytes + ' B';
+    else if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
+    else if (bytes < 1073741824) return (bytes / 1048576).toFixed(1) + ' MB';
+    else return (bytes / 1073741824).toFixed(1) + ' GB';
+  };
 
   const copyToClipboard = (id, content) => {
     navigator.clipboard.writeText(content).then(() => {
@@ -86,6 +77,30 @@ const ProjectInformation = ({projectId}: {projectId: string}) => {
       console.error('Failed to copy: ', err);
     });
   };
+
+   async function downloadFile(url, filename) {
+    try {
+      const response = await fetch(url);
+      if (!response.ok) throw new Error('Network response was not ok');
+      const blob = await response.blob();
+      const downloadUrl = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = downloadUrl;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(downloadUrl);
+    } catch (error) {
+      console.error('Download failed:', error);
+      // You might want to show an error message to the user here
+    }
+  }
+
+  const handleDownload = async (attachment) => {
+    await downloadFile(attachment.url, attachment.name);
+  };
+
   return (
     <TooltipProvider>
       <Card className="w-full max-w-md shadow-lg border-0">
@@ -173,37 +188,57 @@ const ProjectInformation = ({projectId}: {projectId: string}) => {
             </TabsContent>
             <TabsContent value="attachments" className="mt-0">
               <ScrollArea className="h-[400px] p-4">
-                {attachments.map((attachment) => (
-                  <div key={attachment.id} className="mb-4 p-4 bg-indigo-50 rounded-lg border border-indigo-200 flex items-center shadow-sm hover:shadow-md transition-shadow duration-200">
-                    {getFileIcon(attachment.type)}
-                    <div className="flex-grow ml-3">
-                      <p className="text-sm font-medium text-gray-700">{attachment.name}</p>
-                      <p className="text-xs text-gray-500">{attachment.size} • {attachment.date}</p>
-                    </div>
-                    <div className="flex">
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <Button variant="ghost" size="sm" className="mr-1 hover:bg-indigo-200">
-                            <Download className="w-4 h-4" />
-                          </Button>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p>Download file</p>
-                        </TooltipContent>
-                      </Tooltip>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <Button variant="ghost" size="sm" onClick={() => handleRemoveAttachment(attachment.id)} className="hover:bg-indigo-200">
-                            <X className="w-4 h-4" />
-                          </Button>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p>Remove file</p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </div>
-                  </div>
-                ))}
+                {attachmentsLoading && <FileAttachmentSkeleton />}
+              {!attachmentsLoading && files && files.length >0 && files.map((attachment) => (
+        <div key={attachment.id} className="mb-4 p-4 bg-indigo-50 rounded-lg border border-indigo-200 flex items-center shadow-sm hover:shadow-md transition-shadow duration-200">
+          {attachment.type === 'IMAGES' ? (
+            <div className="w-16 h-16 flex-shrink-0 rounded overflow-hidden">
+              <img src={attachment.url} alt={attachment.name} className="w-full h-full object-cover" />
+            </div>
+          ) : (
+            <div className="w-16 h-16 flex-shrink-0 flex items-center justify-center bg-indigo-100 rounded">
+              {getFileIcon(attachment.type)}
+            </div>
+          )}
+          <div className="flex-grow ml-3">
+            <p className="text-sm font-medium text-gray-700">{attachment.name}</p>
+            <p className="text-xs text-gray-500">
+              {formatFileSize(attachment.metadata.size)} • {new Date(attachment.created_at).toLocaleDateString()}
+            </p>
+          </div>
+          <div className="flex">
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="mr-1 hover:bg-indigo-200"
+                  onClick={() =>  handleDownload(attachment)}
+                >
+                  <Download className="w-4 h-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Download file</p>
+              </TooltipContent>
+            </Tooltip>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="hover:bg-indigo-200"
+                >
+                  <X className="w-4 h-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Remove file</p>
+              </TooltipContent>
+            </Tooltip>
+          </div>
+        </div>
+      ))}
               </ScrollArea>
               <div className="p-4 border-t border-gray-200">
                 <Button onClick={handleAddAttachment} className="w-full bg-indigo-500 hover:bg-indigo-600 text-white">

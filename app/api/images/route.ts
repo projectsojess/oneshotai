@@ -15,10 +15,17 @@ export async function POST(request: NextRequest) {
             }, {status:400})
         }
 
-        const { base64, projectId, chatId } = await request.json();
+        const { base64, projectId, chatId, title } = await request.json();
+
+        if(!projectId && !chatId){
+
+            return NextResponse.json({
+                message: INVALID_REQUEST
+            }, {status:400})
+        }
         const buffer = Buffer.from(base64,'base64');
 
-        const filenameDb = `IMAGE_${new Date()}.png`;
+        const filenameDb = `${title}_IMAGE_${new Date()}.png`;
 
         const { data, error } = await supabase.from("user_files")
                                 .insert({
@@ -37,7 +44,8 @@ export async function POST(request: NextRequest) {
         if(id){
 
             const fileNameS3 = `${id}.png`;
-            const path = `${user.id}/IMAGES/${fileNameS3}`;
+            const path = projectId && chatId ? `${user.id}/${projectId}/${chatId}/IMAGES/${fileNameS3}` 
+            : projectId && !chatId ? `${user.id}/${projectId}/IMAGES/${fileNameS3}`: `${user.id}/${chatId}/IMAGES/${fileNameS3}` ;
     
             const { data, error } = await supabase.storage
                                     .from('onestopai-bucket') 

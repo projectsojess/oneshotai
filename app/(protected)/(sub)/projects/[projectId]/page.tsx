@@ -16,6 +16,12 @@ const ProjectPage = ({params} : {params : {projectId: string}}) => {
     const [project, setProject] = useState(null);
     const [isInfoOpen, setIsInfoOpen] = useState(false);
     const router = useRouter();
+    const [pinnedItems, setPinnedItems] = useState([]);
+    const [files, setFiles ] = useState([]);
+    const [itemsLoading, setItemsLoading ] = useState(true);
+    const [attachmentsLoading, setAttachmentsLoading] = useState(true);
+
+
     useEffect(() => {
 
         const getProjectData = async () => {
@@ -32,6 +38,45 @@ const ProjectPage = ({params} : {params : {projectId: string}}) => {
         getProjectData();
       },[])
 
+      useEffect(() => {
+
+        const getAllPinnedItems = async() => {
+            const projectId = params.projectId
+            try {
+                const resp = await axios.get("/api/conversations/pinned",{
+                    params: {projectId}
+                })
+                const { data } = resp;
+    
+                setPinnedItems(data.pinnedItems);
+                setItemsLoading(false);
+            } catch (error) {
+                
+                toast.error(error.response?.data?.message || INTERNAL_SERVER_ERROR_MESSAGE)
+            }
+        }
+        getAllPinnedItems();
+      },[]);
+
+      useEffect(() => {
+
+        const getAllFiles = async () => {
+    
+          try {
+    
+            const resp = await axios.get(`/api/projects/${params.projectId}/files`)
+          const { data } = resp;
+    
+          setFiles(data.files);
+            setAttachmentsLoading(false);
+          } catch (error) {
+            
+            toast.error(error.response?.data?.message || INTERNAL_SERVER_ERROR_MESSAGE)
+          }
+        }
+    
+        getAllFiles();
+      },[])
     return (
       <div className="container mx-auto p-4">
           <div className="mb-8">
@@ -47,8 +92,10 @@ const ProjectPage = ({params} : {params : {projectId: string}}) => {
         <div className="hidden lg:block lg:w-1/3">
           <ProjectInformation 
             projectId={params.projectId}
-            // pinnedMessages={project.pinnedMessages || []}
-            // attachments={project.attachments || []}
+            pinnedItems={pinnedItems}
+            itemsLoading={itemsLoading}
+            files={files}
+            attachmentsLoading={attachmentsLoading}
           />
         </div>
 
@@ -64,9 +111,11 @@ const ProjectPage = ({params} : {params : {projectId: string}}) => {
               <X className="h-6 w-6" />
             </Button>
             <ProjectInformation 
-              projectId={params.projectId}
-              // pinnedMessages={project.pinnedMessages || []}
-              // attachments={project.attachments || []}
+                   projectId={params.projectId}
+                   pinnedItems={pinnedItems}
+                   itemsLoading={itemsLoading}
+                   files={files}
+                   attachmentsLoading={attachmentsLoading}
             />
           </div>
         </div>

@@ -32,7 +32,7 @@ export async function GET(request: NextRequest, context: any) {
         },{status:200});
     } catch (error) {
         
-        logger.error("Error Fetching all chats")
+        logger.error("Error Fetching recent chats")
         return NextResponse.json({
             message: INTERNAL_SERVER_ERROR_MESSAGE
         }, {status:500});

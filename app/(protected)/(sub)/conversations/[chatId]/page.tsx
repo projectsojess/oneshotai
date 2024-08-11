@@ -61,7 +61,7 @@ const ChatPage = ({params} : {params : {chatId: string}}) => {
           prompt={selectedPrompt}
           models={models.filter((model) => model.type ==='IMAGE')}
           chatId={params.chatId}
-          projectId=""
+          projectId={projectId}
         />
       </div>
       )}
