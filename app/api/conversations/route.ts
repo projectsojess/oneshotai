@@ -1,9 +1,9 @@
 import {OPENAI_TEXT_ASSISTENT } from "@/constants/app-constants";
-import { INTERNAL_SERVER_ERROR_MESSAGE, INVALID_DATA, INVALID_REQUEST } from "@/constants/error-messages";
-import { getUserServer } from "@/hooks/use-current-user";
+import { INTERNAL_SERVER_ERROR_MESSAGE, INVALID_DATA } from "@/constants/error-messages";
+import { getUserPlanServer, getUserServer } from "@/hooks/use-current-user";
 import { logger } from "@/logger/logger";
 import { PromptSchema } from "@/schemas/validation/prompt-schema";
-import { checkUserLimit } from "@/utils/check-limit";
+import { getCostFormModel, updateUserCredits } from "@/utils/credit-utils";
 import { createServer } from "@/utils/supabase/server";
 import { NextRequest, NextResponse } from "next/server";
 import { OpenAI} from 'openai';
@@ -28,15 +28,20 @@ export async function POST(request: NextRequest) {
 
         const supabase = createServer();
 
-        const proceed = checkUserLimit(validValues.model);
+        const cost = await getCostFormModel(validValues.model);
 
-        if(!proceed){
+        const { available_credits } = await getUserPlanServer();
+
+
+
+        if(cost > available_credits){
 
             return NextResponse.json({
                 message: 'Limit exceeded'
             }, {status:403})
         }
-    
+        
+
         const messages: ChatCompletionMessageParam[] = [
             OPENAI_TEXT_ASSISTENT,
             {
@@ -83,7 +88,10 @@ export async function POST(request: NextRequest) {
         }))
         const resp = await supabase.from("chat_messages")
                                 .insert(messageData);
-         
+        
+        const newAvailableCredits = available_credits - cost;
+        updateUserCredits(newAvailableCredits,cost);
+        
         return NextResponse.json({
             chatId,
         },{status:200});

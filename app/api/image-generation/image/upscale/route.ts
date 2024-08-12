@@ -1,10 +1,10 @@
 
 import { INTERNAL_SERVER_ERROR_MESSAGE, INVALID_DATA } from "@/constants/error-messages";
 import { STABLE_DIFFUSION_ENDPOINTS } from "@/constants/server-constants";
+import { getUserPlanServer } from "@/hooks/use-current-user";
 import { imageData } from "@/mocks/mock-data";
 import { ImageUpscaleSchema } from "@/schemas/validation/image-upscale-schema";
-import { checkUserLimit } from "@/utils/check-limit";
-import { createServer } from "@/utils/supabase/server";
+import { getCostFormModel, updateUserCredits } from "@/utils/credit-utils";
 import axios from "axios";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -40,11 +40,11 @@ export async function  PUT(request: NextRequest) {
 
         const { prompt,negativePrompt, model,creativity } = validatedFields.data;
 
-        const supabase = createServer();
+        const cost = await getCostFormModel(model);
 
-        const proceed = checkUserLimit(model);
+        const { available_credits } = await getUserPlanServer();
 
-        if(!proceed){
+        if(available_credits < cost){
 
             return NextResponse.json({
                 message: 'Limit exceeded'
@@ -85,6 +85,8 @@ export async function  PUT(request: NextRequest) {
             imgBase64s = imageData;
         }
 
+        const newAvailableCredits = available_credits - cost;
+        updateUserCredits(newAvailableCredits,cost);
         
         return NextResponse.json({
             urls:  imgBase64s,

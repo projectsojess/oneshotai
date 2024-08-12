@@ -4,8 +4,9 @@ import { promises as fs } from 'fs';
 import path from 'path';
 import OpenAI from "openai";
 import { createServer } from "@/utils/supabase/server";
-import { checkUserLimit } from "@/utils/check-limit";
 import { INTERNAL_SERVER_ERROR_MESSAGE } from "@/constants/error-messages";
+import { getCostFormModel, updateUserCredits } from "@/utils/credit-utils";
+import { getUserPlanServer } from "@/hooks/use-current-user";
 
 const openai = new OpenAI();
 
@@ -14,31 +15,41 @@ const openai = new OpenAI();
 export async function POST(request: NextRequest, res:NextResponse){
 
     try {
-        
+        let audioBuffer ;
         const { prompt, model, voice }= await request.json();
 
-        const supabase = createServer();
 
-        const proceed = checkUserLimit(model);
+        const cost = await getCostFormModel(model);
 
-        if(!proceed){
+        const { available_credits } = await getUserPlanServer();
+
+        if(available_credits < cost){
 
             return NextResponse.json({
                 message: 'Limit exceeded'
             }, {status:403})
         }
 
-        //  const audio = await openai.audio.speech.create({
-        //                     model:model,
-        //                     voice:voice,
-        //                     input:prompt
-        //                 });
-        // const audioBuffer = await audio.arrayBuffer();
+         if(process.env.NODE_ENV === 'production'){
 
-        const audioFilePath = path.join(process.cwd(), 'public', 'audio', 'response.mp3');
+            const audio = await openai.audio.speech.create({
+                model:model,
+                voice:voice,
+                input:prompt
+            });
+            audioBuffer = await audio.arrayBuffer();
 
-    // Read the file
-    const audioBuffer = await fs.readFile(audioFilePath);
+         }else {
+
+
+            const audioFilePath = path.join(process.cwd(), 'public', 'audio', 'response.mp3');
+            audioBuffer = await fs.readFile(audioFilePath);
+         }
+
+
+        const newAvailableCredits = available_credits - cost;
+        updateUserCredits(newAvailableCredits,cost);
+        // Read the file
 
         const response = new NextResponse(audioBuffer);
 

@@ -2,9 +2,10 @@
 import { OPEN_AI_IMAGE_MODELS, RESOLUTIONS_ASPECT_MAP, SD_IMAGE_MODELS } from "@/constants/app-constants";
 import { INTERNAL_SERVER_ERROR_MESSAGE } from "@/constants/error-messages";
 import { STABLE_DIFFUSION_ENDPOINTS } from "@/constants/server-constants";
+import { getUserPlanServer } from "@/hooks/use-current-user";
 import { logger } from "@/logger/logger";
 import { imageData } from "@/mocks/mock-data";
-import { checkUserLimit } from "@/utils/check-limit";
+import { getCostFormModel, updateUserCredits } from "@/utils/credit-utils";
 import { createServer } from "@/utils/supabase/server";
 import axios from "axios";
 import { NextRequest, NextResponse } from "next/server";
@@ -32,11 +33,12 @@ export async function  POST(request: NextRequest) {
             id?: string,
             base64: string
         }[] = [];
-        const supabase = createServer();
 
-        const proceed = checkUserLimit(model);
+        const cost = await getCostFormModel(model);
 
-        if(!proceed){
+        const { available_credits } = await getUserPlanServer();
+
+        if(available_credits < cost){
 
             return NextResponse.json({
                 message: 'Limit exceeded'
@@ -80,7 +82,9 @@ export async function  POST(request: NextRequest) {
         }else {
             imgBase64s = imageData;
         }
-        
+        const newAvailableCredits = available_credits - cost;
+        updateUserCredits(newAvailableCredits,cost);
+
         return NextResponse.json({
             imageData: imgBase64s,
             model: model

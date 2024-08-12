@@ -17,50 +17,48 @@ export async function POST(request: NextRequest) {
 
         const { base64, projectId, chatId } = await request.json();
         const buffer = Buffer.from(base64,'base64');
+        const fileSizeInBytes = buffer.length;
 
-        const filenameDb = `AUDIO_${new Date()}.mp3`;
+        const filename = `AUDIO_${new Date()}.mp3`;
+        const path = `${user.id}/AUDIOS/${filename}`;
+
+        const { error: saveError } = await supabase.storage
+        .from('onestopai-bucket') 
+        .upload(path, buffer, {
+            contentType: 'audio/mpeg',
+            upsert: false
+        });
+
+        if(saveError){
+
+            return NextResponse.json({
+                message: 'Unable to save audio. Please try again in some time.'
+            }, {status:500});
+        }
+    
+        const { data: urlData } = await supabase.storage
+                                .from('onestopai-bucket')
+                                .getPublicUrl(path);
 
         const { data, error } = await supabase.from("user_files")
                                 .insert({
                                     type:'AUDIO',
-                                    filename:filenameDb,
+                                    filename:filename,
                                     project_id:projectId,
-                                    chat_id:chatId
+                                    chat_id:chatId,
+                                    size_bytes: fileSizeInBytes,
+                                    public_url: urlData.publicUrl
                                 }).select();
         if(error){
-
             return NextResponse.json({
                 message: 'Unable to save audio. Please try again in some time.'
             }, {status:500});
         }
-        const id = data[0].id;
-        if(id){
 
-            const fileNameS3 = `${id}.mp3`;
-            const path = projectId && chatId ? `${user.id}/${projectId}/${chatId}/AUDIOS/${fileNameS3}` 
-            : projectId && !chatId ? `${user.id}/${projectId}/AUDIOS/${fileNameS3}`: `${user.id}/${chatId}/AUDIOS/${fileNameS3}` ;
-    
-            const { data, error } = await supabase.storage
-                                    .from('onestopai-bucket') 
-                                    .upload(path, buffer, {
-                                        contentType: 'audio/mpeg',
-                                        upsert: false
-                                    });
-            if(error){
-                return NextResponse.json({
-                    message: 'Unable to save audio. Please try again in some time.'
-                }, {status:500});
-            }
-
-            return NextResponse.json({
-                message: 'Saved Audio Successfully'
-            }, {status:200});
-        }else {
-
-            return NextResponse.json({
-                message: 'Unable to save audio. Please try again in some time.'
-            }, {status:500});
-        }
+        return NextResponse.json({
+            message: 'Saved Audio Successfully'
+        }, {status:200});
+ 
     } catch (error) {
         console.log(error);
         logger.error("Error saving audio")

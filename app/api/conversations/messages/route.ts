@@ -1,6 +1,7 @@
 import { INTERNAL_SERVER_ERROR_MESSAGE } from "@/constants/error-messages";
+import { getUserPlanServer } from "@/hooks/use-current-user";
 import { logger } from "@/logger/logger";
-import { checkUserLimit } from "@/utils/check-limit";
+import { getCostFormModel, updateUserCredits } from "@/utils/credit-utils";
 import { createServer } from "@/utils/supabase/server";
 import { NextRequest, NextResponse } from "next/server";
 import { OpenAI} from 'openai';
@@ -16,9 +17,11 @@ export async function POST(request: NextRequest) {
 
         const supabase = createServer();
 
-        const proceed = checkUserLimit(model);
+        const cost = await getCostFormModel(model);
 
-        if(!proceed){
+        const { available_credits } = await getUserPlanServer();
+
+        if(available_credits < cost){
 
             return NextResponse.json({
                 message: 'Limit exceeded'
@@ -52,6 +55,10 @@ export async function POST(request: NextRequest) {
                 message: INTERNAL_SERVER_ERROR_MESSAGE,
             },{status:500});
         }
+
+        const newAvailableCredits = available_credits - cost;
+        updateUserCredits(newAvailableCredits,cost);
+        
         return NextResponse.json({
             messages: data,
         },{status:200});

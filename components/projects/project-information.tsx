@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/tooltip";
 import { PinnedItemsSkeleton } from '../skeletons/projects/pinned-skeleton';
 import { FileAttachmentSkeleton } from '../skeletons/projects/files-skeleton';
+import { ProjectFileComponent } from './project-file';
 
 interface ProjectInformationProps {
   projectId: string,
@@ -37,22 +38,6 @@ const ProjectInformation = ({projectId, pinnedItems, itemsLoading, files, attach
     setPinnedMessages(pinnedMessages.filter(message => message.id !== id));
   };
 
-  const handleAddAttachment = () => {
-    console.log("Adding new attachment");
-  };
-
-  const handleRemoveAttachment = (id) => {
-    setAttachments(attachments.filter(attachment => attachment.id !== id));
-  };
-
-  const getFileIcon = (type) => {
-    switch(type) {
-      case 'IMAGES': return <Image className="w-6 h-6 text-blue-500" />;
-      case 'AUDIOS': return <AudioLinesIcon className="w-6 h-6 text-red-500" />;
-      case 'VIDEOS': return <Video className="w-6 h-6 text-green-500" />;
-      default: return <Paperclip className="w-6 h-6 text-gray-500" />;
-    }
-  };
   const getItemIcon = (type) => {
     switch(type) {
       case 'message': return <Pin className="w-5 h-5 text-blue-400" />;
@@ -61,12 +46,6 @@ const ProjectInformation = ({projectId, pinnedItems, itemsLoading, files, attach
       case 'video': return <FileVideo className="w-5 h-5 text-red-400" />;
       default: return <Pin className="w-5 h-5 text-blue-400" />;
     }
-  };
-  const formatFileSize = (bytes) => {
-    if (bytes < 1024) return bytes + ' B';
-    else if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
-    else if (bytes < 1073741824) return (bytes / 1048576).toFixed(1) + ' MB';
-    else return (bytes / 1073741824).toFixed(1) + ' GB';
   };
 
   const copyToClipboard = (id, content) => {
@@ -78,32 +57,7 @@ const ProjectInformation = ({projectId, pinnedItems, itemsLoading, files, attach
     });
   };
 
-   async function downloadFile(url, filename) {
-    try {
-      const response = await fetch(url);
-      if (!response.ok) throw new Error('Network response was not ok');
-      const blob = await response.blob();
-      const downloadUrl = window.URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = downloadUrl;
-      link.download = filename;
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-      window.URL.revokeObjectURL(downloadUrl);
-    } catch (error) {
-      console.error('Download failed:', error);
-      // You might want to show an error message to the user here
-    }
-  }
 
-  const handleDownload = async (attachment) => {
-    await downloadFile(attachment.url, attachment.name);
-  };
-
-  /*
-  HOW TO HANDLE FILE: SAVE IT IN BUCKET, GET THE URL, SAVE THE URL IN DB
-  */
   return (
     <TooltipProvider>
       <Card className="w-full max-w-md shadow-lg border-0">
@@ -192,56 +146,13 @@ const ProjectInformation = ({projectId, pinnedItems, itemsLoading, files, attach
             <TabsContent value="attachments" className="mt-0">
               <ScrollArea className="h-[400px] p-4">
                 {attachmentsLoading && <FileAttachmentSkeleton />}
-              {!attachmentsLoading && files && files.length >0 && files.map((attachment) => (
-        <div key={attachment.id} className="mb-4 p-4 bg-indigo-50 rounded-lg border border-indigo-200 flex items-center shadow-sm hover:shadow-md transition-shadow duration-200">
-          {attachment.type === 'IMAGES' ? (
-            <div className="w-16 h-16 flex-shrink-0 rounded overflow-hidden">
-              <img src={attachment.url} alt={attachment.name} className="w-full h-full object-cover" />
-            </div>
-          ) : (
-            <div className="w-16 h-16 flex-shrink-0 flex items-center justify-center bg-indigo-100 rounded">
-              {getFileIcon(attachment.type)}
-            </div>
-          )}
-          <div className="flex-grow ml-3">
-            <p className="text-sm font-medium text-gray-700">{attachment.name}</p>
-            <p className="text-xs text-gray-500">
-              {formatFileSize(attachment.metadata.size)} • {new Date(attachment.created_at).toLocaleDateString()}
-            </p>
-          </div>
-          <div className="flex">
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  className="mr-1 hover:bg-indigo-200"
-                  onClick={() =>  handleDownload(attachment)}
-                >
-                  <Download className="w-4 h-4" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>Download file</p>
-              </TooltipContent>
-            </Tooltip>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  className="hover:bg-indigo-200"
-                >
-                  <X className="w-4 h-4" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>Remove file</p>
-              </TooltipContent>
-            </Tooltip>
-          </div>
-        </div>
-      ))}
+              {!attachmentsLoading && files && files.length >0 && files.map((attachment,index) => (
+                <ProjectFileComponent 
+                    key={index}
+                  attachment={attachment}
+                
+                />
+                ))}
               </ScrollArea>
 
             </TabsContent>
