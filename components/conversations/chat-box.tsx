@@ -84,7 +84,7 @@ const ChatBox = ({ chatId, openImageDialog, openAudioDialog,initializeProjectId}
       )
     );
   };
-  const pinMessage = async (id: string, chat:boolean, project:boolean)=> {
+  const pinMessage = async (id: string, chat:boolean, project:boolean, updatePin: boolean)=> {
 
     if(plan.plan !=='PREMIUM'){
 
@@ -100,7 +100,7 @@ const ChatBox = ({ chatId, openImageDialog, openAudioDialog,initializeProjectId}
 
         const { data } = resp;
 
-        if(chat){
+        if(updatePin){
           addPinnedItem(data.pinnedItem);
         }
         updateMessagePinnedStatus(id,chat,project);
@@ -196,7 +196,7 @@ const ChatBox = ({ chatId, openImageDialog, openAudioDialog,initializeProjectId}
                       <Image alt='logo' fill src='/logo.svg' />
                     </div>}
                 </div>
-                <div className={`mx-2 p-4 rounded-lg relative ${message.role === 'user' ? 'bg-white text-gray-900' : 'bg-gray-900 text-white'} inline-block`}>
+                <div className={`mx-2 p-4 rounded-lg relative ${message.role === 'user' ? 'bg-gray-900 text-white' : 'bg-gray-100 text-gray-900 border border-gray-300 '} inline-block`}>
                 <MessageRenderer content={message.content} />
                   {message.role == 'assistant' && (
                     <DropdownMenu>
@@ -210,7 +210,7 @@ const ChatBox = ({ chatId, openImageDialog, openAudioDialog,initializeProjectId}
                         <DropdownMenuItem>
                         <Button 
                         variant='ghost'
-                        onClick={() => pinMessage(message.id,true,message.project_pinned)}
+                        onClick={() => pinMessage(message.id,true,message.project_pinned,true)}
                         >
                           <PinIcon className="mr-2 h-4 w-4 text-blue-500"/>
                           <span>Pin to Chat</span>
@@ -222,7 +222,7 @@ const ChatBox = ({ chatId, openImageDialog, openAudioDialog,initializeProjectId}
                         <DropdownMenuItem>
                         <Button 
                         variant='ghost'
-                        onClick={() => pinMessage(message.id,message.chat_pinned,true)}
+                        onClick={() => pinMessage(message.id,message.chat_pinned,true,false)}
                         >
                           <PinIcon className="mr-2 h-4 w-4 text-yellow-500"/>
                           <span>Pin to Project</span>
