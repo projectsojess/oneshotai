@@ -18,7 +18,7 @@ export const AUDIO_MODEL_CONFIGS = {
 
 
 
-export const VARIATIONS = [1,2,3,4,5,6,7,8,9,10];
+export const VARIATIONS = [1,2,3,4,5];
 
 
 export const MODEL_CONFIGS = {
@@ -36,14 +36,14 @@ export const MODEL_CONFIGS = {
       supportsVariations: false,
       supportImage: false
     },
-    'sd-image-3-md': {
+    'sd3-medium': {
       resolutions: ['1024x1024', '1024x576', '1024x439',"1024x1536","1024x682","1024x1280","1024x819","1024x1820","1024x2391"],
       defaultResolution: '1024x1024',
       maxPromptLength: 10000,
       supportsVariations: false,
       supportImage: true
     },
-    'sd-image-3-lg': {
+    'sd3-large': {
       resolutions: ['1024x1024', '1024x576', '1024x439',"1024x1536","1024x682","1024x1280","1024x819","1024x1820","1024x2391"],
       defaultResolution: '1024x1024',
       maxPromptLength: 10000,
@@ -51,7 +51,7 @@ export const MODEL_CONFIGS = {
       supportImage: true
 
     },
-    'sd-image-3-lg-tb': {
+    'sd3-large-turbo': {
       resolutions: ['1024x1024', '1024x576', '1024x439',"1024x1536","1024x682","1024x1280","1024x819","1024x1820","1024x2391"],
       defaultResolution: '1024x1024',
       maxPromptLength: 10000,
@@ -74,12 +74,29 @@ export const MODEL_CONFIGS = {
       supportsVariations: false,
       supportImage: false
 
+    },
+    'fal-ai/flux-pro':{
+      resolutions: [
+        '2048x2048',
+        '1024x1024',
+        '1024x1365',
+        '1024x1820',
+        '1365x1024',
+        '1820x1024'
+        ],
+
+      defaultResolution: '1024x1024',
+      maxPromptLength: 10000,
+      supportsVariations: true,
+      supportImage: false
     }
   };
 
-  export const OPEN_AI_IMAGE_MODELS = ['dall-e-3','dall-e-2'];
+export const OPEN_AI_IMAGE_MODELS = ['dall-e-3','dall-e-2'];
 
 export const SD_IMAGE_MODELS = ['sd3-large-turbo','sd3-medium','sd3-large','sd-image-core','sd-image-ultra'];
+
+export const FLUX_MODELS = ['fal-ai/flux-pro']
 
 
 export const RESOLUTIONS = [
@@ -106,3 +123,12 @@ export const RESOLUTIONS_ASPECT_MAP = {
   "1024x1820": "9:16" ,
   "1024x2391": "9:21" 
 }
+
+export const FLUX_ASPECT_MAP = {
+  '2048x2048': 'square_hd',
+  '1024x1024': 'square',
+  '1024x1365': 'portrait_4_3',
+  '1024x1820': 'portrait_16_9',
+  '1365x1024': 'landscape_4_3',
+  '1820x1024': 'landscape_16_9'
+};

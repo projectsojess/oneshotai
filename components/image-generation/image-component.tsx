@@ -1,15 +1,21 @@
 'use client'
 import React, { useState } from 'react'
-import {  DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from '@/components/ui/dropdown-menu';
-import { MoreVertical, Edit, Save, Download } from 'lucide-react';
+import {  Save, Download } from 'lucide-react';
 import axios from 'axios';
 import toast from 'react-hot-toast';
 import { INTERNAL_SERVER_ERROR_MESSAGE } from '@/constants/error-messages';
 import { Button } from '../ui/button';
 import { AiOutlineLoading3Quarters } from 'react-icons/ai';
-import { cn } from '@/lib/utils';
+import Image from 'next/image';
 
-const ImageComponent = ({ imageData, index, projectId, chatId }) => {
+interface ImageComponentProps {
+  imageData: any,
+  index: number,
+  projectId?:string,
+  chatId?: string,
+}
+
+const ImageComponent = ({ imageData, index, projectId, chatId }: ImageComponentProps) => {
 
     const [isSaving, setIsSaving] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
@@ -20,6 +26,7 @@ const ImageComponent = ({ imageData, index, projectId, chatId }) => {
     try {
       const resp = await axios.post("/api/images",{
         base64:imageData.base64,
+        url: imageData.url,
         projectId,
         chatId,
         title:'test'
@@ -62,51 +69,45 @@ const ImageComponent = ({ imageData, index, projectId, chatId }) => {
   };
 
   return (
-    <div className="relative group bg-gray-700 rounded-lg overflow-hidden">
-    <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button size="icon" variant="secondary" className="w-8 h-8 p-0">
-            <MoreVertical className="h-4 w-4" />
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className='bg-gray-800 text-white border-0 rounded'>
-          <DropdownMenuItem onClick={() => console.log('Edit')} className='text-gray-200 focus:bg-gray-700 focus:text-gray-100 hover:bg-gray-700 hover:text-gray-100'>
-            <Edit className='h-4 w-4 mr-2'/> <span>Edit</span>
-          </DropdownMenuItem>
-          <DropdownMenuItem onClick={saveImage} className='text-gray-200 focus:bg-gray-700 focus:text-gray-100 hover:bg-gray-700 hover:text-gray-100'>
-            <Save className='w-4 h-4 mr-2' /><span>Save</span>
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
+    <div className="relative bg-gray-700 rounded-lg overflow-hidden">
+    <div className="aspect-square relative">
+      <Image 
+      src={imageData.type ==='url'? imageData.url : `data:image/png;base64,${imageData.base64}`}
+      alt={`Generated image ${index + 1}`}
+      layout="fill"
+      objectFit="contain"
+      />
     </div>
-    <img src={`data:image/png;base64,${imageData.base64}`} alt={`Generated image ${index + 1}`} className="w-full h-auto" />
-    {isSaving && (
-      <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 text-gray-700">
-             <AiOutlineLoading3Quarters className={cn(!isSaving ?  "hidden" : "block animate-spin ml-2 w-20 h-20")}/>
-      </div>
-    )}
-    <div className="p-2">
+    <div className="p-2 flex space-x-2">
       <Button
-        onClick={() => handleDownload()}
+        onClick={saveImage}
         variant="secondary"
-        className="w-full text-white bg-red-500 hover:bg-red-600"
+        className="flex-1 text-white bg-green-500 hover:bg-green-600"
+        disabled={isSaving}
+      >
+        {isSaving ? 'Saving' : 'Save'}
+        { isSaving && (
+           <AiOutlineLoading3Quarters className="animate-spin h-4 w-4 ml-2" />
+        )}
+         { !isSaving && (
+           <Save className='ml-2 h-4 w-4'/>
+        )}
+      </Button>
+      <Button
+        onClick={handleDownload}
+        variant="secondary"
+        className="flex-1 text-white bg-red-500 hover:bg-red-600"
         disabled={isDownloading}
       >
+        {isDownloading ? 'Downloading' : 'Download'}
         {isDownloading ? (
-          <>
-            <div className="spinner-small mr-2"></div>
-            Downloading
-          </>
+          <AiOutlineLoading3Quarters className="animate-spin h-4 w-4 ml-2" />
         ) : (
-          <>
-            <Download className="h-4 w-4 mr-2" /> Download
-          </>
+          <Download className="h-4 w-4 ml-2" />
         )}
       </Button>
     </div>
-      
-    </div>
+  </div>
   )
 }
 

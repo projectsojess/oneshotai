@@ -1,15 +1,14 @@
 
-import { OPEN_AI_IMAGE_MODELS, RESOLUTIONS_ASPECT_MAP, SD_IMAGE_MODELS } from "@/constants/app-constants";
+import { FLUX_ASPECT_MAP, FLUX_MODELS, OPEN_AI_IMAGE_MODELS, RESOLUTIONS_ASPECT_MAP, SD_IMAGE_MODELS } from "@/constants/app-constants";
 import { INTERNAL_SERVER_ERROR_MESSAGE } from "@/constants/error-messages";
 import { STABLE_DIFFUSION_ENDPOINTS } from "@/constants/server-constants";
 import { getUserPlanServer } from "@/hooks/use-current-user";
 import { logger } from "@/logger/logger";
 import { imageData } from "@/mocks/mock-data";
 import { getCostFormModel, updateUserCredits } from "@/utils/credit-utils";
-import { createServer } from "@/utils/supabase/server";
 import axios from "axios";
 import { NextRequest, NextResponse } from "next/server";
-
+import * as fal from "@fal-ai/serverless-client";
 import { OpenAI} from 'openai';
 
 const openai = new OpenAI();
@@ -22,6 +21,19 @@ interface StableDiffusionData {
     image? : File
 }
 
+interface FluxData {
+
+    model: string,
+    prompt: string,
+    resolution: string,
+    variations: number
+}
+interface FluxResult {
+    images: {
+        url: string,
+        content_type: string
+    }[]
+}
 export async function  POST(request: NextRequest) {
     
     try {
@@ -31,7 +43,9 @@ export async function  POST(request: NextRequest) {
 
         var imgBase64s : {
             id?: string,
-            base64: string
+            base64?: string,
+            url?: string,
+            type: string
         }[] = [];
 
         const cost = await getCostFormModel(model);
@@ -62,10 +76,12 @@ export async function  POST(request: NextRequest) {
     
                     if(image.b64_json) imgBase64s = [...imgBase64s, {
                         id:'',
-                        base64: image.b64_json
+                        base64: image.b64_json,
+                        type: 'base64'
                     }];
                 })
-            }if (SD_IMAGE_MODELS.includes(model)) {
+            }
+            if (SD_IMAGE_MODELS.includes(model)) {
     
                 const data = await generateImageWithStableDiffusionModels(
                     {
@@ -76,8 +92,26 @@ export async function  POST(request: NextRequest) {
     
                 imgBase64s = [...imgBase64s, {
                     id:'',
-                    base64: data
+                    base64: data,
+                    type: 'base64'
                 }];
+            }
+
+            if(FLUX_MODELS.includes(model)){
+
+                
+                const data = await generateImageWithFlux({
+                    model,
+                    prompt,
+                    resolution: size,
+                    variations
+                });
+                 imgBase64s = data.images.map((image) => (
+                    {
+                        url: image.url,
+                        type:'url'
+                    }
+                  ));
             }
         }else {
             imgBase64s = imageData;
@@ -129,7 +163,6 @@ const  generateImageWithStableDiffusionModels = async ({
                 output_format: 'png'
             }
         }
-        console.debug("payload", payload);
 
         const response = await axios.postForm(
             url,
@@ -147,5 +180,30 @@ const  generateImageWithStableDiffusionModels = async ({
           
     } catch (error) {
          throw error;
+    }
+}
+
+const generateImageWithFlux = async ({
+    model,
+    prompt,
+    resolution,
+    variations
+}: FluxData): Promise<FluxResult | undefined> => {
+
+    try {
+        const image_size = FLUX_ASPECT_MAP[resolution as keyof typeof FLUX_ASPECT_MAP];
+        const result = await fal.subscribe(model, {
+            input: {
+              prompt: prompt,
+              image_size,
+              num_images: variations
+            },
+            logs:false
+          }) as FluxResult;
+
+          return result;
+    } catch (error) {
+        
+        logger.error("Error creating image")
     }
 }

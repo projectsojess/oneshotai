@@ -243,7 +243,7 @@ const ImageDialog: React.FC<ImageDialogProps> = ({ isOpen, onClose, prompt, mode
        {generatedImages.length > 0 ? (
               <div className="grid grid-cols-2 gap-4">
                 {generatedImages.map((data: any, index) => (
-                    <ImageComponent imageData={data} key={index} index={index} projectId={projectId} chatId={chatId} />
+                    <ImageComponent imageData={data} key={index} index={index} projectId={projectId} chatId={chatId}/>
                 ))}
               </div>
             ) : (

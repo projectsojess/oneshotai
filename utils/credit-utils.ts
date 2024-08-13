@@ -55,3 +55,48 @@ export const updateUserCredits = async (newAvailableCredits:number, cost:number)
         logger.error(`unable to update user credits for user: ${user.id} for cost: ${cost}`);
     }
 }
+
+export const updateUserStorage = async ( newAvailableStorage: number, size: number) => {
+    
+    const user = await getUserServer();
+
+    try {
+        const supabase = createAdmin();
+
+        if(!user){
+            logger.error(`unable to update user credits empty user found`)
+        }
+        const { data, error } = await supabase.from("user_plans")
+                                        .update({
+                                            available_storage: newAvailableStorage
+                                        }).eq("user_id", user.id);
+        
+        if(error){
+
+            logger.error(`unable to update user credits for user: ${user.id} for cost: ${size}`);
+        }
+        
+
+    } catch (error) {
+        logger.error(`unable to update user credits for user: ${user.id} for cost: ${size}`);
+    }
+}
+
+export const getAvailableStorage = async():Promise<number | null> => {
+
+    try {
+        const supabase = createServer();
+        const user = await getUserServer();
+        const { data, error } = await supabase.from("user_plans")
+                                    .select("available_storage")
+                                    .eq("user_id",user.id);
+        if(error){
+            return null;
+        }
+
+       return data[0].available_storage;
+    } catch (error) {
+        
+        return null;
+    }
+}

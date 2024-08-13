@@ -14,6 +14,7 @@ import toast from 'react-hot-toast';
 import { INTERNAL_SERVER_ERROR_MESSAGE } from '@/constants/error-messages';
 import { AiOutlineLoading3Quarters } from 'react-icons/ai';
 import { cn } from '@/lib/utils';
+import { Textarea } from '../ui/textarea';
 
 const ImageUpscaleComponent = ({ models } :  { models: { value: string; name: string }[]}) => {
 
@@ -112,9 +113,10 @@ const ImageUpscaleComponent = ({ models } :  { models: { value: string; name: st
                   <FormLabel className="text-sm sm:text-base text-gray-100">Image Prompt</FormLabel>
                   <div className="relative">
                       <FormControl>
-                        <Input
-                        className='bg-gray-800 text-gray-100 border-0'
+                        <Textarea
+                        className='w-full h-32 bg-gray-800 border-gray-600  focus:border-gray-500 focus:ring-gray-500 pr-10 rounded-md resize-none overflow-y-auto text-gray-100'
                         placeholder="What you wish to see in the output image. A strong, descriptive prompt that clearly defines elements, colors, and subjects will lead to better results."
+                        disabled={isLoading}
                         {...field}
                         />
                       </FormControl>
@@ -130,8 +132,8 @@ const ImageUpscaleComponent = ({ models } :  { models: { value: string; name: st
                 <FormItem>
                   <FormLabel className="text-sm sm:text-base text-gray-100">Negative Prompt (Optional)</FormLabel>
                   <FormControl>
-                    <Input
-                      className='bg-gray-800 text-gray-100 border-0'
+                    <Textarea
+                      className='w-full h-32 bg-gray-800 border-gray-600  focus:border-gray-500 focus:ring-gray-500 pr-10 rounded-md resize-none overflow-y-auto text-gray-100'
                       placeholder="A blurb of text describing what you do not wish to see in the output image."
                       {...field}
                     />

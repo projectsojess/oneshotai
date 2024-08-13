@@ -16,6 +16,7 @@ import toast from 'react-hot-toast';
 import { INTERNAL_SERVER_ERROR_MESSAGE } from '@/constants/error-messages';
 import { AiOutlineLoading3Quarters } from 'react-icons/ai';
 import { cn } from '@/lib/utils';
+import ImageComponent from './image-component';
 
 const ImageGenerationComponent = ({ models } :  { models: { value: string; name: string }[]}) => {
 
@@ -56,7 +57,7 @@ const ImageGenerationComponent = ({ models } :  { models: { value: string; name:
             });
       
             const { data } = resp;
-            setGeneratedImages(data.urls);
+            setGeneratedImages(data.imageData);
           } catch (error) {
       
             toast.error(error.response?.data?.message || INTERNAL_SERVER_ERROR_MESSAGE)
@@ -129,11 +130,12 @@ const ImageGenerationComponent = ({ models } :  { models: { value: string; name:
                 <FormItem>
                   <FormLabel className="text-sm sm:text-base text-gray-100">Negative Prompt</FormLabel>
                   <FormControl>
-                    <Input
-                      className='bg-gray-800 text-gray-100 border-0'
-                      placeholder="A blurb of text describing what you do not wish to see in the output image."
-                      {...field}
-                    />
+                  <Textarea 
+                          className="w-full h-32 bg-gray-800 border-gray-600  focus:border-gray-500 focus:ring-gray-500 pr-10 rounded-md resize-none overflow-y-auto text-gray-100"
+                          disabled={isLoading}
+                          placeholder="A blurb of text describing what you do not wish to see in your image"
+                          {...field}
+                        />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -222,35 +224,8 @@ const ImageGenerationComponent = ({ models } :  { models: { value: string; name:
           <div className="mt-8">
             <h3 className="text-xl font-semibold mb-4 text-white">Generated Images</h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-6">
-              {generatedImages.map((bas64: string, index) => (
-                <div key={index} className="relative group">
-                  <div className="relative overflow-hidden rounded-lg shadow-md">
-                    <img
-                      src={`data:image/png;base64,${bas64}`}
-                      alt={`Generated image ${index + 1}`}
-                      className="w-full h-auto object-cover transition-transform duration-300 group-hover:scale-110"
-                    />
-                  </div>
-                  <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                    <Button
-                      onClick={() => handleDownload(bas64, index)}
-                      disabled={isDownloading === index}
-                      className="bg-red-500 text-black hover:bg-red-700 transition-colors duration-300 text-white"
-                    >
-                      {isDownloading === index ? (
-                        <span className="flex items-center">
-                          <ImageIcon className="animate-pulse mr-2" />
-                          Downloading...
-                        </span>
-                      ) : (
-                        <span className="flex items-center">
-                          <Download className="mr-2" />
-                          Download
-                        </span>
-                      )}
-                    </Button>
-                  </div>
-                </div>
+              {generatedImages.map((data: any, index) => (
+                <ImageComponent imageData={data} key={index} index={index} />
               ))}
             </div>
           </div>

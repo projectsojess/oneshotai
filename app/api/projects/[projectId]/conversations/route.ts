@@ -8,7 +8,7 @@ export async function GET(request: NextRequest, context: any) {
     try {
         const { params } = context;
         const { projectId } = params;
-        
+
         const supabase = createServer();
 
         if(!projectId){
@@ -18,8 +18,9 @@ export async function GET(request: NextRequest, context: any) {
             }, {status:400})
         }
         const { data, error } = await supabase.from('chats')
-                                .select('id,created_at,title,description,icon')
-                                .eq("project_id", projectId).limit(3);
+                                .select('id,created_at,title,description,icon').order('created_at', {ascending:false})
+
+                                .eq("project_id", projectId).limit(4);
 
         if(error){
             logger.error(`Error fetching all chats e: ${error.message}`)

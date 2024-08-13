@@ -38,12 +38,6 @@ const routes = [
         href: '/image-generation',
         color:'text-red-500'
     },
-    {
-        label: 'Video Generation',
-        icon: VideoIcon,
-        href: '/video-generation',
-        color:'text-yellow-500'
-    },
 ]
 
 
