@@ -6,6 +6,7 @@ import { Button } from '../ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar'
 import { CreditCard, LogOut, Settings, User } from 'lucide-react'
 import { logout } from '@/actions/signout';
+import Link from 'next/link';
 
 const UserCard = () => {
 
@@ -28,8 +29,10 @@ const UserCard = () => {
             <DropdownMenuSeparator/>
             <DropdownMenuGroup>
                 <DropdownMenuItem>
+                    <Link href="/profile" className='flex'>
                     <User className='mr-2 h-4 w-4'/>
                     <span>Profile</span>
+                    </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem>
                     <CreditCard className="mr-2 h-4 w-4" />
