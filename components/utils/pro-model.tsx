@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import PayPalSubscriptionButton from "../payments/paypal-subscription-button";
 import { cn } from "@/lib/utils";
 import { appData } from "@/constants/app-data";
+import { getUserClient } from "@/hooks/use-user";
 
   
 const ProModal = () => {
@@ -14,10 +15,12 @@ const ProModal = () => {
     const [showPayPal, setShowPayPal] = useState(false);
     const [selectedPlanId, setSelectedPlanId] = useState('');
     const [selectedProductId, setSelectedProductId] = useState('');
-
-    const handleUpgradeClick = (planId: string, productId: string) => {
+    const [userId, setUserId ] = useState('');
+    const handleUpgradeClick = async (planId: string, productId: string) => {
       setSelectedPlanId(planId);
       setSelectedProductId(productId);
+      const userData = await getUserClient();
+      setUserId(userData.id);
       setShowPayPal(true);
     };
 
@@ -85,7 +88,7 @@ const ProModal = () => {
 
               </div>
               <div className="w-full">
-              <PayPalSubscriptionButton  planId={selectedPlanId} productId={selectedProductId}/>
+              <PayPalSubscriptionButton  planId={selectedPlanId} productId={selectedProductId} userId={userId}/>
               </div>
               <div className="hidden md:block w-[25vw]">
 

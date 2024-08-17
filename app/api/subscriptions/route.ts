@@ -17,7 +17,8 @@ export async function POST(request: NextRequest) {
 
         if(accessToken){
 
-            const { status, plan_id, start_time} = await getSubscription(subscriptionId,accessToken);
+            const { status, plan_id, start_time,billing_info} = await getSubscription(subscriptionId,accessToken);
+            const { next_billing_time: endDate } = billing_info;
 
             if(!isToday(start_time)) return NextResponse.json({
                 message: INVALID_REQUEST
@@ -44,31 +45,32 @@ export async function POST(request: NextRequest) {
                 if(plan){
 
                     const { data, error } = await supabase.from("user_subscriptions")
-                                .insert({
+                                .upsert({
                                     user_id: user.id,
-                                    plan: plan.plan,
+                                    plan_id: plan.paypal_plan_id,
                                     status,
-                                    expired: false,
-                                    subscription_id: subscriptionId
+                                    start_date: start_time,
+                                    end_date: endDate,
+                                    id:subscriptionId
                                 });
 
                     if(error){
-
+                        console.log(error);
                         return NextResponse.json({
                             message: INTERNAL_SERVER_ERROR_MESSAGE
                             }, {status:500})
                     }
 
                    const resp = await supabase.from("user_plans")
-                                    .insert({
+                                    .upsert({
                                         user_id: user.id,
                                         plan: plan.plan,
-                                        status: true,
+                                        status,
                                         total_credits: plan.total_credits,
                                         available_credits: plan.total_credits,
                                         total_storage: plan.total_storage,
                                         available_storage: plan.total_storage,
-
+                                        expiry_date: endDate
                                     });
                                     
                     if(resp.error){

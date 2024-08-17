@@ -40,9 +40,9 @@ export async function updateSession(request: NextRequest) {
   const isApiAuthRoute = request.nextUrl.pathname.startsWith(apiConfig.apiAuthRoutes);
   const isPublicRoutes = apiConfig.publicRoutes.includes(request.nextUrl.pathname);
   const isAuthRoutes = apiConfig.authRoutes.includes(request.nextUrl.pathname);
+  const isWebhook = request.nextUrl.pathname.startsWith(apiConfig.webhookRoutes);
 
-  if(!user && !(isApiAuthRoute || isPublicRoutes || isAuthRoutes)) {
-    console.log('no user')
+  if(!user && !(isApiAuthRoute || isPublicRoutes || isAuthRoutes || isWebhook)) {
     const url = request.nextUrl.clone();
     url.pathname = '/auth/login';
     return NextResponse.redirect(url);

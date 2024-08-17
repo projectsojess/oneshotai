@@ -12,7 +12,7 @@ const initialOptions = {
     intent: "subscription"
   };
 
-export default function PayPalSubscriptionButton({planId, productId}:{planId:string, productId: string}) {
+export default function PayPalSubscriptionButton({planId, productId, userId}:{planId:string, productId: string, userId: string}) {
 
   const handleSubscriptionSuccess = async(subscriptionId: string) => {
 
@@ -37,7 +37,8 @@ export default function PayPalSubscriptionButton({planId, productId}:{planId:str
       }}
       createSubscription={(data, actions) => {
         return actions.subscription.create({
-          plan_id: planId
+          plan_id: planId,
+          custom_id: userId
         });
       }}
       onApprove={(data, actions) => {

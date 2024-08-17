@@ -15,5 +15,6 @@ export const apiConfig = {
         "/privacy-policy",
         "/licenses",
         "/contact-us",
-    ]
+    ],
+    webhookRoutes: "/api/webhooks"
 }
