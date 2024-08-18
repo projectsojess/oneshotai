@@ -132,3 +132,5 @@ export const FLUX_ASPECT_MAP = {
   '1365x1024': 'landscape_4_3',
   '1820x1024': 'landscape_16_9'
 };
+
+export const creditsPerUSD = 100;

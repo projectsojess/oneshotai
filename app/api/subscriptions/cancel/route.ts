@@ -1,7 +1,7 @@
 import { INTERNAL_SERVER_ERROR_MESSAGE } from "@/constants/error-messages";
 import { getUserServer } from "@/hooks/use-current-user";
 import { cancelSubscription, getPayPalAccessToken } from "@/utils/paypal";
-import { createServer } from "@/utils/supabase/server";
+import createAdmin from "@/utils/supabase/admin";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(request: NextRequest) {
@@ -9,10 +9,10 @@ export async function POST(request: NextRequest) {
     try {
         const { reason } = await request.json();
 
-        const supabase = createServer();
+        const supabase = createAdmin();
         const user = await getUserServer();
         const  {data, error} = await supabase.from('user_plans')
-                                .select('id')
+                                .select('subscription_id')
                                 .eq('user_id',user.id);
 
         if(error){
@@ -30,9 +30,9 @@ export async function POST(request: NextRequest) {
                 message: INTERNAL_SERVER_ERROR_MESSAGE
             }, {status:500});
         }
-        const { id } = data[0];
+        const { subscription_id } = data[0];
 
-        const resp = await cancelSubscription(id,accessToken,reason);
+        const resp = await cancelSubscription(subscription_id,accessToken,reason);
 
         const { error: planUpdateError }  = await supabase.from("user_plans")
                                             .update({
@@ -48,7 +48,7 @@ export async function POST(request: NextRequest) {
         const { error: subUpdaterror } = await supabase.from("user_subscriptions")
                                             .update({
                                                 status: 'CANCELLED'
-                                            }).eq("id",id);
+                                            }).eq("id",subscription_id);
 
         if(subUpdaterror){
 
@@ -61,7 +61,7 @@ export async function POST(request: NextRequest) {
         }, { status : 200});
 
     } catch (error) {
-        
+        console.log(error);
         return NextResponse.json({
             message: INTERNAL_SERVER_ERROR_MESSAGE
         }, {status:500});

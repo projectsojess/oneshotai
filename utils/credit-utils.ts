@@ -4,6 +4,7 @@ import { SupabaseClient } from "@supabase/supabase-js";
 import { logger } from "@/logger/logger";
 import createAdmin from "./supabase/admin";
 import { getUserServer } from "@/hooks/use-current-user";
+import { Plan } from "@/types/plan";
 
 export const getCostFormModel = async (model: string):Promise<number> =>{
 
@@ -99,4 +100,11 @@ export const getAvailableStorage = async():Promise<number | null> => {
         
         return null;
     }
+}
+
+export const isPlanExpired = (plan: Plan): boolean => {
+
+    const expiry = new Date(plan.expiry_date);
+    const now = new Date();
+    return now > expiry;
 }

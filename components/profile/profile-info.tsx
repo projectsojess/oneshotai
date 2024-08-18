@@ -6,17 +6,18 @@ import { User as UserIcon, CreditCard, HardDrive, PlusCircle } from 'lucide-reac
 import { Plan } from '@/types/plan';
 import { Badge } from '../ui/badge';
 import { User } from '@supabase/supabase-js';
+import PurchaseCreditsDialog from './purchase-credits-dialog';
+interface ResourceCardProps {
+  icon: React.ReactNode;
+  title: string;
+  value: number | string;
+  showButton: boolean;
+  onClick?: () => void;  // Made optional
+  plan?: string;
+  userId?: string  // Made optional
+}
 
 const  ProfileInfoComponent = ({plan, user} : {plan: Plan, user: User}) => {
-
-
-    const handlePurchaseCredits = () => {
-        console.log("Purchasing more credits");
-      };
-    
-      const handlePurchaseStorage = () => {
-        console.log("Purchasing more storage");
-      };
     
 
   return (
@@ -52,16 +53,15 @@ const  ProfileInfoComponent = ({plan, user} : {plan: Plan, user: User}) => {
             icon={<CreditCard className="h-6 w-6 text-gray-700" />}
             title="Available Credits"
             value={plan.available_credits}
-            buttonText="Buy Credits"
-            onClick={handlePurchaseCredits}
+            showButton={true}
+            userId={user.id}
           />
           <ResourceCard 
             plan={plan.plan} 
             icon={<HardDrive className="h-6 w-6 text-gray-700" />}
             title="Available Storage"
             value={plan.available_storage}
-            buttonText="Buy Storage"
-            onClick={handlePurchaseStorage}
+            showButton={false}
           />
         </div>
       </CardContent>
@@ -69,27 +69,19 @@ const  ProfileInfoComponent = ({plan, user} : {plan: Plan, user: User}) => {
   )
 }
 
-function ResourceCard({ icon, title, value, buttonText, onClick, plan }) {
+const ResourceCard: React.FC<ResourceCardProps> = ({ icon, title, value, showButton, plan,userId }) => {
   return (
-    <div className="bg-white rounded-lg shadow-md p-4 flex flex-col items-start justify-between border border-gray-200">
-      <div className="flex items-center space-x-4">
-        <div className="bg-gray-100 p-3 rounded-full">{icon}</div>
-        <div>
+    <div className="bg-gray-50 rounded-lg p-4 flex flex-col items-start justify-between border border-gray-200">
+      <div className="flex items-center space-x-4 w-full">
+        <div className="bg-white p-3 rounded-full shadow-sm">{icon}</div>
+        <div className="flex-grow">
           <p className="text-sm font-medium text-gray-600">{title}</p>
           <p className="text-lg font-semibold text-gray-900">{value}</p>
         </div>
-      </div>
-      <Button 
-        size="sm" 
-        onClick={onClick} 
-        className='mt-4'
-      >
-        <PlusCircle className="h-4 w-4 mr-2" />
-        {buttonText} 
-        {plan === 'FREE' &&(
-            <Badge variant='premium' className='ml-2'>PRO</Badge>
+        {showButton && (
+          <PurchaseCreditsDialog plan={plan} userId={userId} />
         )}
-      </Button>
+      </div>
     </div>
   );
 }

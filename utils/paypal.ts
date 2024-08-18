@@ -72,6 +72,42 @@ export const getSubscription = async (subscriptionId, accessToken) => {
     }
   };
 
+  export const activateSubscription = async (subscriptionId, accessToken) => {
+    try {
+      const response = await axios.post(`https://api-m.sandbox.paypal.com/v1/billing/subscriptions/${subscriptionId}/activate`, {
+        reason: "Reactivating subscription"
+      },{
+        headers: {
+          'Authorization': `Bearer ${accessToken}`,
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        }
+      });
+  
+      return response.data;
+    } catch (error) {
+      logger.error('Error reactivating subscription:');
+      throw error;
+    }
+  };
+
+  export const getOrderDetails = async (orderId, accessToken) => {
+      
+    try {
+      const response = await axios.get(`https://api-m.sandbox.paypal.com/v2/checkout/orders/${orderId}`,{
+        headers: {
+          'Authorization': `Bearer ${accessToken}`,
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        }
+      });
+      return response.data;
+    } catch (error) {
+      logger.error('Error getting order details:');
+      throw error;
+    }
+  }
+
   async function downloadAndCache(url) {
     const filePath = `${CACHE_DIR}/paypal-cert-${WEBHOOK_ID}`;
   

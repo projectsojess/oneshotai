@@ -65,7 +65,7 @@ const ProfilePage = () => {
           </Card>
 
           {/* Billing */}
-          <BillingInfo plan={plan} />
+          {!loading && (<BillingInfo plan={plan} />)}
 
           {/* Account Actions */}
           {/* <Card className="lg:col-span-3">
