@@ -80,7 +80,8 @@ export async function POST(request: NextRequest) {
                         available_credits: available_credits + plan.total_credits,
                         total_storage: total_storage + plan.total_storage,
                         available_storage: available_storage + plan.total_storage,
-                        expiry_date: endDate
+                        expiry_date: endDate,
+                        subscription_id: subscriptionId
                     }).eq('user_id', user.id);
 
                     if(resp.error){

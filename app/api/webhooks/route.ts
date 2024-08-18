@@ -38,9 +38,9 @@ export async function POST(request: NextRequest) {
                     }
                 }
                 break
-            // case 'BILLING.SUBSCRIPTION.RENEWED':
-            //     await handleSubscriptionRenewed(data.resource)
-            //     break
+            case 'BILLING.SUBSCRIPTION.CANCELLED':
+                await handleSubscriptionCancelled(data.resource)
+                break
             // case 'BILLING.SUBSCRIPTION.PAYMENT.FAILED':
             //     await handlePaymentFailed(data.resource)
             //     break
@@ -131,7 +131,8 @@ export async function POST(request: NextRequest) {
                         available_credits: available_credits + plan.total_credits,
                         total_storage: total_storage + plan.total_storage,
                         available_storage: available_storage + plan.total_storage,
-                        expiry_date: endDate
+                        expiry_date: endDate,
+                        subscription_id: subscriptionId
     
                     }).eq('user_id', custom_id);
                     return resp;
@@ -146,7 +147,8 @@ export async function POST(request: NextRequest) {
                         available_credits: plan.total_credits,
                         total_storage: plan.total_storage,
                         available_storage: plan.total_storage,
-                        expiry_date: endDate
+                        expiry_date: endDate,
+                        subscription_id: subscriptionId
     
                     }).eq('user_id', custom_id);
                     
@@ -161,6 +163,28 @@ export async function POST(request: NextRequest) {
             return resp;
         }
        
+    } catch (error) {
+        logger.error("error saving subscription to db")
+        return null;
+    }
+  }
+
+
+  async function handleSubscriptionCancelled(resource) {
+
+    try {
+        const supabase = createAdmin();
+        const { custom_id, status, id } = resource;
+        const dbResp = await supabase.from("user_subscriptions")
+                                    .update({
+                                        status,
+                                    }).eq('id', id);
+
+        const updatePlanResp = await supabase.from("user_plans")
+                                    .update({
+                                        status
+                                    }).eq("user_id",custom_id);
+        return updatePlanResp;
     } catch (error) {
         logger.error("error saving subscription to db")
         return null;

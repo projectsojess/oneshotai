@@ -53,6 +53,25 @@ export const getSubscription = async (subscriptionId, accessToken) => {
     }
   };
 
+  export const cancelSubscription = async (subscriptionId, accessToken, reason) => {
+    try {
+      const response = await axios.post(`https://api-m.sandbox.paypal.com/v1/billing/subscriptions/${subscriptionId}/cancel`, {
+        reason: reason
+      },{
+        headers: {
+          'Authorization': `Bearer ${accessToken}`,
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        }
+      });
+  
+      return response.data;
+    } catch (error) {
+      logger.error('Error canceling subscription:');
+      throw error;
+    }
+  };
+
   async function downloadAndCache(url) {
     const filePath = `${CACHE_DIR}/paypal-cert-${WEBHOOK_ID}`;
   
