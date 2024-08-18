@@ -61,18 +61,28 @@ export async function POST(request: NextRequest) {
                             }, {status:500})
                     }
 
-                   const resp = await supabase.from("user_plans")
-                                    .upsert({
-                                        user_id: user.id,
-                                        plan: plan.plan,
-                                        status,
-                                        total_credits: plan.total_credits,
-                                        available_credits: plan.total_credits,
-                                        total_storage: plan.total_storage,
-                                        available_storage: plan.total_storage,
-                                        expiry_date: endDate
-                                    });
-                                    
+                    const { data: userPlan, error: userPlanError } = await supabase.from('user_plans')
+                                    .select('available_credits,available_storage,total_credits,total_storage')
+                                    .eq('user_id', user.id);
+
+                    if(userPlanError){
+                        return NextResponse.json({
+                            message: INTERNAL_SERVER_ERROR_MESSAGE
+                        }, {status:500});
+                    }
+                        
+                    const {available_credits, total_credits,total_storage, available_storage } = userPlan[0]
+                    const resp = await supabase.from("user_plans")
+                    .update({
+                        plan: plan.plan,
+                        status,
+                        total_credits: total_credits + plan.total_credits,
+                        available_credits: available_credits + plan.total_credits,
+                        total_storage: total_storage + plan.total_storage,
+                        available_storage: available_storage + plan.total_storage,
+                        expiry_date: endDate
+                    }).eq('user_id', user.id);
+
                     if(resp.error){
                         return NextResponse.json({
                             message: INTERNAL_SERVER_ERROR_MESSAGE
