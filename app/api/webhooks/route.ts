@@ -19,27 +19,37 @@ export async function POST(request: NextRequest) {
 
         switch(event_type){
             case 'BILLING.SUBSCRIPTION.CREATED':
-                const resp = await handleSubscriptionCreated(data.resource);
-                if(resp?.error){
-                    logger.error(`error saving to db e: ${resp?.error.message}`);
+                const createdResp = await handleSubscriptionCreated(data.resource);
+                if(!createdResp){
+                    return NextResponse.json({ status: 'error', message: 'Internal server error' }, { status: 500 });
+                }
+                if(createdResp?.error){
+                    logger.error(`error saving to db e: ${createdResp?.error.message}`);
                     return NextResponse.json({ status: 'error', message: 'Internal server error' }, { status: 500 });
                 }
                 break
             case 'PAYMENT.SALE.COMPLETED':
                 const subscriptionId = data.resource.billing_agreement_id;
                 if(subscriptionId){
-                    const resp = await handlePaymentSaleCompleteForSubscription(data.resource);
-                    if(!resp){
+                    const respSub = await handlePaymentSaleCompleteForSubscription(data.resource);
+                    if(!respSub){
                         return NextResponse.json({ status: 'error', message: 'Internal server error' }, { status: 500 });
                     }
-                    if(resp?.error){
-                        logger.error( `Error in webhook handlePaymentSaleCompleteForSubscription() e: ${resp?.error.message}`)
+                    if(respSub?.error){
+                        logger.error( `Error in webhook handlePaymentSaleCompleteForSubscription() e: ${respSub?.error.message}`)
                         return NextResponse.json({ status: 'error', message: 'Internal server error' }, { status: 500 });
                     }
                 }
                 break
             case 'BILLING.SUBSCRIPTION.CANCELLED':
-                await handleSubscriptionCancelled(data.resource)
+                const cancelResp = await handleSubscriptionCancelled(data.resource);
+                if(!cancelResp){
+                    return NextResponse.json({ status: 'error', message: 'Internal server error' }, { status: 500 });
+                }
+                if(cancelResp?.error){
+                    logger.error(`error saving to db e: ${cancelResp?.error.message}`);
+                    return NextResponse.json({ status: 'error', message: 'Internal server error' }, { status: 500 });
+                }
                 break
             // case 'BILLING.SUBSCRIPTION.PAYMENT.FAILED':
             //     await handlePaymentFailed(data.resource)
