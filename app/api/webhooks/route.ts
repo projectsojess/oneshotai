@@ -127,18 +127,18 @@ export async function POST(request: NextRequest) {
             if(plan){
 
                 const { data, error } = await supabase.from('user_plans')
-                                        .select('available_credits,available_storage,total_credits,total_storage')
+                                        .select('purchased_credits,available_storage,total_storage')
                                         .eq('user_id',custom_id);
     
                 if(data){
     
-                    const {available_credits, total_credits,total_storage, available_storage } = data[0]
+                    const {purchased_credits,total_storage, available_storage } = data[0]
                     const resp = await supabase.from("user_plans")
                     .update({
                         plan: plan.plan,
                         status,
-                        total_credits: total_credits + plan.total_credits,
-                        available_credits: available_credits + plan.total_credits,
+                        total_credits: purchased_credits + plan.total_credits,
+                        plan_credits: plan.total_credits,
                         total_storage: total_storage + plan.total_storage,
                         available_storage: available_storage + plan.total_storage,
                         expiry_date: endDate,
@@ -154,7 +154,7 @@ export async function POST(request: NextRequest) {
                         plan: plan.plan,
                         status,
                         total_credits: plan.total_credits,
-                        available_credits: plan.total_credits,
+                        plan_credits: plan.total_credits,
                         total_storage: plan.total_storage,
                         available_storage: plan.total_storage,
                         expiry_date: endDate,
@@ -170,6 +170,55 @@ export async function POST(request: NextRequest) {
                 return null;
             }
         }else {
+
+            const { data, error } = await supabase.from('user_plans')
+                                        .select('available_storage,total_storage, plan_credits, total_credits, plan, subscription_id, status')
+                                        .eq('user_id',custom_id);
+
+            if(error){
+                return null;
+            }
+            const planData = data[0];
+            const {plan_credits, total_credits,total_storage, available_storage,plan:planName,subscription_id }   = planData
+
+            if(subscriptionId === subscription_id){
+
+                return resp;
+            }
+            if(planName ==='FREE'){
+
+                const resp = await supabase.from("user_plans")
+                .update({
+                    plan: plan.plan,
+                    status,
+                    total_credits: total_credits + plan.total_credits,
+                    plan_credits: plan_credits + plan.total_credits,
+                    total_storage: total_storage + plan.total_storage,
+                    available_storage: available_storage + plan.total_storage,
+                    expiry_date: endDate,
+                    subscription_id: subscriptionId
+
+                }).eq('user_id', custom_id);
+
+            return resp;
+            }else if( status === 'CANCELLED'){
+
+                const resp = await supabase.from("user_plans")
+                .update({
+                    plan: plan.plan,
+                    status,
+                    total_credits: total_credits + plan.total_credits,
+                    plan_credits: plan_credits + plan.total_credits,
+                    total_storage: total_storage + plan.total_storage,
+                    available_storage: available_storage + plan.total_storage,
+                    expiry_date: endDate,
+                    subscription_id: subscriptionId
+
+                }).eq('user_id', custom_id);
+
+                return resp;
+            }
+    
             return resp;
         }
        

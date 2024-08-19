@@ -62,7 +62,7 @@ export async function POST(request: NextRequest) {
                     }
 
                     const { data: userPlan, error: userPlanError } = await supabase.from('user_plans')
-                                    .select('available_credits,available_storage,total_credits,total_storage')
+                                    .select('plan_credits,available_storage,total_credits,total_storage')
                                     .eq('user_id', user.id);
 
                     if(userPlanError){
@@ -71,13 +71,13 @@ export async function POST(request: NextRequest) {
                         }, {status:500});
                     }
                         
-                    const {available_credits, total_credits,total_storage, available_storage } = userPlan[0]
+                    const {plan_credits, total_credits,total_storage, available_storage } = userPlan[0]
                     const resp = await supabase.from("user_plans")
                     .update({
                         plan: plan.plan,
                         status,
                         total_credits: total_credits + plan.total_credits,
-                        available_credits: available_credits + plan.total_credits,
+                        plan_credits: plan_credits + plan.total_credits,
                         total_storage: total_storage + plan.total_storage,
                         available_storage: available_storage + plan.total_storage,
                         expiry_date: endDate,

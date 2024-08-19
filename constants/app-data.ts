@@ -21,7 +21,6 @@ export const appData = {
                 "Generate audios from chat",
                 "Save media files",
                 "10 GB Storage included",
-                "Buy extra storage if needed",
             ],
             price:20,
             currency:'USD',
@@ -36,17 +35,16 @@ export const appData = {
             name: 'PREMIUM',
             planId: 'P-5LK77977P3958123BM233E5Q',
             features:[
-                "5000 Credits for media generation",
+                "4000 Credits for media generation",
                 "Buy more credits if needed",
                 "Generate images from chat",
                 "Generate audios from chat",
                 "Pin generated content to chats & projects",
                 "Save media files",
                 "50 GB Storage included",
-                "Buy extra storage if needed",
 
             ],
-            price:45,
+            price:48,
             currency:'USD',
             buttonText: "Subscribe Now",
             isSubscription: true,
@@ -64,19 +62,18 @@ export const appData = {
                 "Generate audios from chat",
                 "Pin generated content to chats & projects",
                 "Save media files",
-                "Unlimitted Storage Storage included",
-                "Buy extra storage if needed",
+                "Unlimitted Storage  included",
                 "Early access to new features",
                 "Early access to new models"
 
             ],
-            price:100,
+            price:129,
             currency:'USD',
             buttonText: "Buy Now",
-            isSubscription: false,
+            isSubscription: true,
             isPopular: false,
             popularText: 'Popular',
-            recuring: "one-time"
+            recuring: "month"
         }
     ]
 }

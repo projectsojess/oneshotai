@@ -12,12 +12,12 @@ const initialOptions = {
     intent: "subscription"
   };
 
-export default function PayPalSubscriptionButton({planId, productId, userId}:{planId:string, productId: string, userId: string}) {
+export default function PayPalSubscriptionButton({planId, productId, userId, isUpgrade}:{planId:string, productId: string, userId: string, isUpgrade: boolean}) {
 
   const handleSubscriptionSuccess = async(subscriptionId: string) => {
 
     try {
-      const resp = await axios.post("/api/subscriptions",{
+      const resp = await axios.post(`/api/subscriptions${isUpgrade ? '/upgrade':''}`,{
         subscriptionId,
         productId
       });

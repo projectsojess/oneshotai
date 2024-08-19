@@ -1,12 +1,14 @@
 import { useProModal } from "@/hooks/use-pro-modal"
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { Zap, CheckIcon } from "lucide-react";
+import { Zap, CheckIcon, InfoIcon } from "lucide-react";
 import { Button } from "../ui/button";
 import { useEffect, useState } from "react";
 import PayPalSubscriptionButton from "../payments/paypal-subscription-button";
 import { cn } from "@/lib/utils";
 import { appData } from "@/constants/app-data";
-import { getUserClient } from "@/hooks/use-user";
+import { getUserClient, getUserPlanClient } from "@/hooks/use-user";
+import { Plan } from "@/types/plan";
+import toast from "react-hot-toast";
 
   
 const ProModal = () => {
@@ -16,7 +18,16 @@ const ProModal = () => {
     const [selectedPlanId, setSelectedPlanId] = useState('');
     const [selectedProductId, setSelectedProductId] = useState('');
     const [userId, setUserId ] = useState('');
+    const[ showNote, setShowNote ] = useState(false);
+    const [isUpgrade, setIsUpgrade ] = useState(false);
+    const [userPlan, setUserPlan ] = useState<Plan| null>(null);
+
     const handleUpgradeClick = async (planId: string, productId: string) => {
+        
+        if(userPlan?.status ==='ACTIVE'){
+            setShowNote(true);
+            setIsUpgrade(true);
+        }
       setSelectedPlanId(planId);
       setSelectedProductId(productId);
       const userData = await getUserClient();
@@ -30,8 +41,21 @@ const ProModal = () => {
         setShowPayPal(false);
         setSelectedPlanId('')
         setSelectedProductId('')
+        setShowNote(false);
+        setIsUpgrade(false);
       }
     }, [proModal.isOpen]);
+
+    useEffect(() => {
+
+        const getUserPlan = async()=> {
+
+            const plan: Plan = await getUserPlanClient();
+            setUserPlan(plan);
+
+        }
+        getUserPlan();
+    },[])
   return (
     <Dialog open = {proModal.isOpen} onOpenChange={proModal.onClose} >
         <DialogContent className="max-w-[95vw] max-h-[95vh] overflow-y-auto">
@@ -43,6 +67,12 @@ const ProModal = () => {
                 </DialogTitle>
             </DialogHeader>
             <DialogDescription className="text-black">
+                      {showNote &&(
+                    <div className="flex items-center justify-center">
+                        <InfoIcon className="w-4 h-4 mr-2"/> 
+                        Please note that on upgrading existing subscription will be cancelled
+                    </div>
+                )}
             <div className='flex flex-col gap-6 items-center mt-10 lg:flex-row lg:items-end lg:justify-center'>
                 {appData.plans.map((plan,index) => (
                     <div key={index} className={cn('p-10 rounded-3xl border border-secondary shadow-[0_7px_14px_#EAEAEA] max-w-sm w-full',
@@ -51,7 +81,10 @@ const ProModal = () => {
                         <div className='flex justify-between'>
                             <h3 className={cn('text-lg font-bold ', 
                                 index% 2 !== 0 ? 'text-secondary' : 'text-primary/90'
-                            )}>{plan.name}</h3>
+                            )}>
+                                {plan.name}
+                                    {userPlan?.plan === plan.name && ' (current)'}
+                                </h3>
                                 {plan.isPopular && (
                                     <div className='inline-flex text-sm px-4 py-1.5 rounded-xl border border-gray-900/90 bg-gray-900'>
                                     <span className='bg-[linear-gradient(to_right,#DD7DDF,#E1CD86,#BBCB92,#71C2EF,#3BFFFF,#DD7DDF)] text-transparent bg-clip-text font-medium'>
@@ -64,7 +97,7 @@ const ProModal = () => {
                             <span className='text-4xl font-bold tracking-tighter leading-none'>${plan.price}</span>
                             <span>/{plan.recuring}</span>
                         </div>
-                          {!showPayPal &&(
+                          {!showPayPal && (plan.name !== userPlan?.plan ) && (
                               <Button variant="premium" className="w-full border-0 " disabled={loading} onClick={() => handleUpgradeClick(plan.planId,plan.productId)}>
                               Upgrade Now
                               <Zap className="w-4 h-4 ml-2 fill-white" />
@@ -88,10 +121,10 @@ const ProModal = () => {
 
               </div>
               <div className="w-full">
-              <PayPalSubscriptionButton  planId={selectedPlanId} productId={selectedProductId} userId={userId}/>
+              <PayPalSubscriptionButton  planId={selectedPlanId} productId={selectedProductId} userId={userId} isUpgrade={isUpgrade}/>
               </div>
               <div className="hidden md:block w-[25vw]">
-
+          
               </div>
          </DialogFooter>
           )}
