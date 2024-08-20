@@ -15,31 +15,37 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { Pin, Files, X, Copy, Image, FileAudio, FileVideo, Check, Info } from 'lucide-react';
+import { Pin, Files, X, Copy, Image as ImageIcon, FileAudio, FileVideo, Check, Info, AudioLines, Video, Paperclip } from 'lucide-react';
 import { Badge } from '../ui/badge';
 import { useProModal } from '@/hooks/use-pro-modal';
+import { ProjectFileComponent } from '../projects/project-file';
 
-const ChatDrawer = ({pinnedItems,plan } : {pinnedItems: any[],plan: string}) => {
+const ChatDrawer = ({pinnedItems,plan, attachments } : {pinnedItems: any[],plan: string, attachments:any[]}) => {
   const [activeTab, setActiveTab] = useState('pinned');
   const [copiedId, setCopiedId] = useState(null);
   const promodal = useProModal();
 
-  const attachments = [
-    { id: 1, type: 'image', name: 'mockup.png', size: '2.4 MB', date: '2023-07-28' },
-    { id: 2, type: 'pdf', name: 'project_brief.pdf', size: '1.2 MB', date: '2023-07-30' },
-    { id: 3, type: 'video', name: 'demo.mp4', size: '15.7 MB', date: '2023-08-02' },
-  ];
+
 
   const getItemIcon = (type) => {
     switch(type) {
       case 'message': return <Pin className="w-5 h-5 text-blue-400" />;
       case 'audio': return <FileAudio className="w-5 h-5 text-green-400" />;
-      case 'image': return <Image className="w-5 h-5 text-purple-400" />;
+      case 'image': return <ImageIcon className="w-5 h-5 text-purple-400" />;
       case 'video': return <FileVideo className="w-5 h-5 text-red-400" />;
       default: return <Pin className="w-5 h-5 text-blue-400" />;
     }
   };
 
+  const getFileIcon = (type) => {
+    switch(type) {
+      case 'IMAGE': return <ImageIcon className="w-6 h-6 text-blue-500" />;
+      case 'AUDIO': return <AudioLines className="w-6 h-6 text-red-500" />;
+      case 'VIDEO': return <Video className="w-6 h-6 text-green-500" />;
+      default: return <Paperclip className="w-6 h-6 text-gray-500" />;
+    }
+  };
+  
   const copyToClipboard = (id, content) => {
     navigator.clipboard.writeText(content).then(() => {
       setCopiedId(id);
@@ -148,16 +154,13 @@ const ChatDrawer = ({pinnedItems,plan } : {pinnedItems: any[],plan: string}) => 
               )}
               {activeTab === 'files' && (
                 <ScrollArea className="h-full p-4">
-                  {attachments.map((attachment) => (
-                    <Card key={attachment.id} className="mb-4 bg-gray-800 border-gray-700">
-                      <CardContent className="p-4 flex items-center">
-                        {getItemIcon(attachment.type)}
-                        <div className="flex-grow ml-3">
-                          <p className="text-sm font-medium text-gray-300">{attachment.name}</p>
-                          <p className="text-xs text-gray-400">{attachment.size} • {attachment.date}</p>
-                        </div>
-                      </CardContent>
-                    </Card>
+                  {attachments.map((attachment,index) => (
+                    <ProjectFileComponent 
+                    key={index}
+                  attachment={attachment}
+                  isChat={true}
+                
+                />
                   ))}
                 </ScrollArea>
               )}

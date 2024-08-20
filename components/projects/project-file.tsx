@@ -2,8 +2,9 @@ import { AudioLines, Download, Image, Loader2, Paperclip, Video, X } from "lucid
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
 import { useState } from "react";
+import { cn } from "@/lib/utils";
 
-export const ProjectFileComponent = ({attachment }) => {
+export const ProjectFileComponent = ({attachment, isChat=false }) => {
 
     const [isDownloading, setIsDownloading] = useState(false);
 
@@ -49,19 +50,23 @@ export const ProjectFileComponent = ({attachment }) => {
     };
   
     return (
-<div className="mb-4 p-4 bg-indigo-50 rounded-lg border border-indigo-200 flex items-center shadow-sm hover:shadow-md transition-shadow duration-200">
+<div className={cn("mb-4 p-4  rounded-lg border  flex items-center shadow-sm hover:shadow-md transition-shadow duration-200",
+  isChat ? "bg-gray-800 border-gray-700" : "bg-indigo-50 border-indigo-200"
+)}>
       {attachment.type === 'IMAGE' ? (
         <div className="w-16 h-16 flex-shrink-0 rounded overflow-hidden">
           <img src={attachment.public_url} alt={attachment.filename} className="w-full h-full object-cover" />
         </div>
       ) : (
-        <div className="w-16 h-16 flex-shrink-0 flex items-center justify-center bg-indigo-100 rounded">
+        <div className={cn("w-16 h-16 flex-shrink-0 flex items-center justify-center  rounded",
+          isChat? 'bg-gray-800' : 'bg-indigo-100'
+        )}>
           {getFileIcon(attachment.type)}
         </div>
       )}
       <div className="flex-grow ml-3">
-        <p className="text-sm font-medium text-gray-700">{attachment.filename}</p>
-        <p className="text-xs text-gray-500">
+        <p className={cn("text-sm font-medium ", isChat ? 'text-gray-300' : 'text-gray-700')}>{attachment.filename}</p>
+        <p className={cn("text-xs ", isChat ? 'text-gray-300': 'text-gray-500')}>
           {formatFileSize(attachment.size_bytes)} • {new Date(attachment.created_at).toLocaleDateString()}
         </p>
       </div>
@@ -71,7 +76,7 @@ export const ProjectFileComponent = ({attachment }) => {
             <Button
               variant="ghost"
               size="sm"
-              className="mr-1 hover:bg-indigo-200"
+              className={cn("mr-1 ", isChat ? 'hover:bg-gray-900': 'hover:bg-indigo-200')}
               onClick={handleDownload}
               disabled={isDownloading}
             >
@@ -91,7 +96,7 @@ export const ProjectFileComponent = ({attachment }) => {
             <Button
               variant="ghost"
               size="sm"
-              className="hover:bg-indigo-200"
+              className={cn( isChat ? 'hover:bg-gray-900': 'hover:bg-indigo-200')}
             //   onClick={() => onRemove(attachment.id)}
             >
               <X className="w-4 h-4" />

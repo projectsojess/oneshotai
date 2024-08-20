@@ -28,11 +28,6 @@ const ProjectInformation = ({projectId, pinnedItems, itemsLoading, files, attach
 
   const [copiedId, setCopiedId] = useState(null);
 
-  const [attachments, setAttachments] = useState([
-    { id: 1, type: 'image', name: 'mockup.png', size: '2.4 MB', date: '2023-07-28', url: '/api/placeholder/100/100' },
-    { id: 2, type: 'pdf', name: 'project_brief.pdf', size: '1.2 MB', date: '2023-07-30', url: '#' },
-    { id: 3, type: 'video', name: 'demo.mp4', size: '15.7 MB', date: '2023-08-02', url: '/api/placeholder/100/100' },
-  ]);
 
   const handleUnpinMessage = (id) => {
     setPinnedMessages(pinnedMessages.filter(message => message.id !== id));

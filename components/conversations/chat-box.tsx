@@ -42,7 +42,27 @@ const ChatBox = ({ chatId, openImageDialog, openAudioDialog,initializeProjectId}
 
   const [pinnedItems, setPinnedItems ] = useState([]);
   const [plan, setPlan] = useState<Plan>(null);
+  const [files, setFiles ] = useState([]);
   const proModal = useProModal();
+
+  useEffect(() => {
+
+    const getAllFiles = async () => {
+
+      try {
+
+        const resp = await axios.get(`/api/conversations/${chatId}/files`)
+      const { data } = resp;
+
+      setFiles(data.files);
+      } catch (error) {
+        
+        toast.error(error.response?.data?.message || INTERNAL_SERVER_ERROR_MESSAGE)
+      }
+    }
+
+    getAllFiles();
+  },[])
 
   useEffect(() => {
 
@@ -264,7 +284,7 @@ const ChatBox = ({ chatId, openImageDialog, openAudioDialog,initializeProjectId}
             </div>
           ))}
           <div ref={messagesEndRef} />
-          <ChatDrawer pinnedItems={pinnedItems} plan={plan?.plan}/>
+          <ChatDrawer pinnedItems={pinnedItems} plan={plan?.plan} attachments={files}/>
         </div>
         <div className="p-4 border-t bg-gray-100">
           <Form {...form}>

@@ -5,7 +5,7 @@ import ProjectInformation from "@/components/projects/project-information";
 import { Button } from "@/components/ui/button";
 import { INTERNAL_SERVER_ERROR_MESSAGE } from "@/constants/error-messages";
 import axios from "axios";
-import { MessageSquare, X } from "lucide-react";
+import {  X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
