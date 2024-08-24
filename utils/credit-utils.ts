@@ -33,7 +33,7 @@ const fetchCostData = unstable_cache(
     { revalidate: 86400, tags: ['ai-models-model'] }  // cache options, 86400 seconds = 1 day
 );
 
-export const updateUserCredits = async (newAvailableCredits:number, cost:number) => {
+export const updateUserCredits = async (newAvailableCredits:number, cost:number, isPlan: boolean) => {
     const user = await getUserServer();
     try {
         const supabase = createAdmin();
@@ -41,14 +41,27 @@ export const updateUserCredits = async (newAvailableCredits:number, cost:number)
         if(!user){
             logger.error(`unable to update user credits empty user found`)
         }
-        const { data, error } = await supabase.from("user_plans")
+        if(isPlan){
+            const { data, error } = await supabase.from("user_plans")
                                         .update({
-                                            available_credits: newAvailableCredits
+                                            plan_credits: newAvailableCredits
                                         }).eq("user_id", user.id);
-        
-        if(error){
+            
+            if(error){
 
-            logger.error(`unable to update user credits for user: ${user.id} for cost: ${cost}`);
+                logger.error(`unable to update user credits for user: ${user.id} for cost: ${cost}`);
+            }
+        }else {
+
+            const { data, error } = await supabase.from("user_plans")
+                                        .update({
+                                            purchased_credits: newAvailableCredits
+                                        }).eq("user_id", user.id);
+            
+            if(error){
+
+                logger.error(`unable to update user credits for user: ${user.id} for cost: ${cost}`);
+            }
         }
         
 

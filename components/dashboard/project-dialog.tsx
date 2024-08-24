@@ -48,7 +48,9 @@ const ProjectDialog = () => {
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
         <Button variant="ghost"> 
-            <Plus className="w-12 h-12 text-primary" /></Button>
+            <Plus className="w-8 h-8 text-primary" />
+            New Project
+            </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px] md:max-w-[600px] lg:max-w-[800px] w-full">
         <DialogHeader>

@@ -50,7 +50,7 @@ export async function  POST(request: NextRequest) {
 
         const cost = await getCostFormModel(model);
 
-        const { available_credits } = await getUserPlanServer();
+        const { available_credits, purchased_credits,plan_credits  } = await getUserPlanServer();
 
         if(available_credits < cost){
 
@@ -116,8 +116,16 @@ export async function  POST(request: NextRequest) {
         }else {
             imgBase64s = imageData;
         }
-        const newAvailableCredits = available_credits - cost;
-        updateUserCredits(newAvailableCredits,cost);
+        var newAvailableCredits:number = 0;
+        if(plan_credits > cost ){
+
+            newAvailableCredits = plan_credits -cost;
+            updateUserCredits(newAvailableCredits,cost, true);
+        }else {
+
+            newAvailableCredits = purchased_credits - cost;
+            updateUserCredits(newAvailableCredits,cost, false);
+        }
 
         return NextResponse.json({
             imageData: imgBase64s,

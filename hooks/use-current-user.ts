@@ -25,6 +25,8 @@ export const getUserPlanServer =async (): Promise<Plan> => {
         total_storage: data[0].total_storage,
         available_storage: data[0].available_storage,
         available_credits: data[0].purchased_credits + data[0].plan_credits,
+        purchased_credits: data[0].purchased_credits,
+        plan_credits:data[0].plan_credits,
         expiry_date: data[0].expiry_date
     };
 

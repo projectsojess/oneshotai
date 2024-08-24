@@ -1,6 +1,5 @@
 import React from 'react'
 import { Card, CardDescription, CardHeader, CardTitle } from '../ui/card'
-import { Plus } from 'lucide-react';
 import ProjectDialog from '../dashboard/project-dialog';
 interface CardTileProps {
 
@@ -24,11 +23,8 @@ const CardTile = ({ title, description, isButton = false,handleClick }: CardTile
             className="w-[200px] h-[120px] flex items-center justify-center cursor-pointer hover:bg-gray-100 transition-colors rounded-lg"
           >
             <CardHeader>
-              <CardTitle className='justify-center items-center flex'>
-                <ProjectDialog />
-              </CardTitle>
               <CardDescription className='text-center text-primary'>
-              New Project
+              <ProjectDialog />
             </CardDescription>
             </CardHeader>
           </Card>
