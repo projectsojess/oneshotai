@@ -4,7 +4,7 @@ import { SiMinutemailer } from "react-icons/si";
 import { InputOTP, InputOTPGroup, InputOTPSeparator, InputOTPSlot } from "../ui/input-otp";
 import { REGEXP_ONLY_DIGITS } from "input-otp";
 import { verifyOtp } from "@/actions/verify-otp";
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import { cn } from "@/lib/utils";
 import ResendOtpCard from "./resend-otp-card";
 import { FormError } from "./form-error";
@@ -20,6 +20,7 @@ const OtpForm = ({ email,sendAgainOtp, redirectTo,type } : OtpFormProps) => {
 
     const [ verifyStatus, setVerifyStatus] = useState<"success" | "failed" | null >(null);
     const [errorMessage, setErrorMessage ] = useState('');
+    const[isSubmitting, startsubmitting] = useTransition();
     const [value, setValue] = useState("");
 
     const inputOptClass = cn({
@@ -33,7 +34,8 @@ const OtpForm = ({ email,sendAgainOtp, redirectTo,type } : OtpFormProps) => {
     const verifyOtpSubmit = async (value) => {
 
         setVerifyStatus(null);
-        verifyOtp({email: email, otp: value, type: type, redirectTo : redirectTo})
+        startsubmitting(() => {
+            verifyOtp({email: email, otp: value, type: type, redirectTo : redirectTo})
         .then((data) => {
 
             if(data?.error){
@@ -41,6 +43,7 @@ const OtpForm = ({ email,sendAgainOtp, redirectTo,type } : OtpFormProps) => {
                 setVerifyStatus("failed");
                 setErrorMessage(data.error);
             }
+        })
         })
 
     }
@@ -62,7 +65,7 @@ const OtpForm = ({ email,sendAgainOtp, redirectTo,type } : OtpFormProps) => {
                 pattern={REGEXP_ONLY_DIGITS}
                 id="input-otp"
                 maxLength={6}
-
+                disabled={isSubmitting}
                 onChange={async (value) => {
                     setValue(value);
                     if (value.length === 6) {

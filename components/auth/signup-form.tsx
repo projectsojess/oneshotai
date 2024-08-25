@@ -21,6 +21,7 @@ import { cn } from '@/lib/utils';
 export const SignupForm = ({ hideSocial }) => {
   const [success, setSuccess] = useState("");
   const [email, setEmail] = useState(null);
+  const [values, setValues ] = useState(null);
   const [showOtp, setShowOtp] = useState(false);
   const [error, setError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -39,12 +40,13 @@ export const SignupForm = ({ hideSocial }) => {
   const onSubmit = async (values: z.infer<typeof SignupSchema>) => {
     setError(""); 
     setSuccess("");
+    setValues(form.getValues());
+    setEmail(values.email);
     startSubmitting(() => {
       signup(values)
       .then((data) => {
         setError(data.error ? data.error : '');
         setSuccess(data.success ? data.success : '');
-        setEmail(values.email)
         if(!data.error){
           setShowOtp(true);
           hideSocial();
@@ -68,7 +70,7 @@ export const SignupForm = ({ hideSocial }) => {
 
     setError(""); 
     setSuccess("");
-    signup(form.getValues())
+    signup(values)
       .then((data) => {
         
         if(data.error) {

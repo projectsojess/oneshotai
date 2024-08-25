@@ -1,18 +1,26 @@
 
-
+'use client';
 import CardWrapper from '@/components/auth/card-wrapper'
 import { LoginForm } from '@/components/auth/login-form'
-import React from 'react'
+import React, { useState } from 'react'
 
 const LoginPage = () => {
+
+  const [showSocial, setShowSocial] = useState(true); 
+
+  const hideSocial = () => {
+
+    setShowSocial(false);
+  }
+  
   return (
     <CardWrapper
       headerLabel='Login'
       backButtonHref='/signup'
       backButtonLabel="Don't have an account?"
-      showSocial
+      showSocial= {showSocial}
     >
-      <LoginForm/>
+      <LoginForm hideSocial={hideSocial}/>
     </CardWrapper>
   )
 }

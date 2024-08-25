@@ -6,17 +6,23 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { useState } from 'react';
+import { useState, useTransition } from 'react';
 import { login } from '@/actions/login';
 import { LoginSchema } from '@/schemas/validation/login-schema';
 import { FormError } from '@/components/auth/form-error';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import toast from 'react-hot-toast';
+import axios from 'axios';
+import { INTERNAL_SERVER_ERROR_MESSAGE } from '@/constants/error-messages';
+import OtpForm from './otp-form';
+import { AiOutlineLoading3Quarters } from 'react-icons/ai';
+import { cn } from '@/lib/utils';
 
 
-export const LoginForm = () => {
+export const LoginForm = ({hideSocial}) => {
   const [error, setError] = useState("");
-  const router = useRouter ();
+  const [showOtp, setShowOtp ] = useState(false);
+  const [email, setEmail ] = useState('');
+  const[isSubmitting, startsubmitting] = useTransition();
   const form = useForm<z.infer<typeof LoginSchema>>({
     resolver: zodResolver(LoginSchema),
     defaultValues: {
@@ -24,21 +30,56 @@ export const LoginForm = () => {
       password:""
     }
   })
-  const isSubmitting = form.formState.isSubmitting;
   const onSubmit = async (values: z.infer<typeof LoginSchema>) => {
 
     setError(""); 
-    login(values)
+    startsubmitting( () => {
+      login(values)
       .then((data) => {
         setError(data && data.error ? data.error : '');
       })
       .catch(() => {
         setError("Something went wrong. Please try again later")
       })
+    })
   }
+  const handleForgotPassword = async() => {
+    const email = form.getValues('email');
+    if (!email) {
+      setError("Please enter your email address first.");
+    } else {
+      setError("");
+      setEmail(form.getValues('email'));
+      try {
+        const resp = await axios.get("/api/auth/reset",{
+            params: { email: form.getValues('email')}
+        })
+        setShowOtp(true);
+        hideSocial();
+    } catch (error) {
+        
+        setError(error.response?.data?.message || INTERNAL_SERVER_ERROR_MESSAGE);
+    }
+      // You can replace this with actual forgot password logic
+    }
+  };
 
+  const sendAgainOtp = async () => {
+    setError(""); 
+    try {
+      const resp = await axios.get("/api/auth/reset",{
+        params: { email: email}
+    });
+      toast.success(resp.data.message);
+    } catch (error) {
+      
+      toast.error(error.response?.data?.message || INTERNAL_SERVER_ERROR_MESSAGE);
+    }
+
+  }
   return (
-    <Form {...form}>
+    !showOtp ? (
+      <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)}
         className='space-y-6'
         >
@@ -77,11 +118,15 @@ export const LoginForm = () => {
                       type='password'
                     />
                   </FormControl>
-                  <Button size='sm' variant='link' asChild className='px-0 font-normal'>
-                    <Link href='/auth/reset'>
-                      Forgot Password ?
-                    </Link>
-                  </Button>
+                  <Button 
+                  type="button"
+                  size='sm' 
+                  variant='link' 
+                  className='px-0 font-normal'
+                  onClick={handleForgotPassword}
+                >
+                  Forgot Password?
+                </Button>
                   <FormMessage/>
                 </FormItem>
                 )}
@@ -94,9 +139,12 @@ export const LoginForm = () => {
             disabled={isSubmitting}
             className='w-full'
           >
-            Login
+            Login                 
+            <AiOutlineLoading3Quarters className={cn(!isSubmitting ?  "hidden" : "block animate-spin ml-2 w-4 h-4")}/>
           </Button>
       </form>
     </Form>
+    ) : 
+    <OtpForm email={email} sendAgainOtp={sendAgainOtp} redirectTo='/reset-password' type='email' />
   )
 }

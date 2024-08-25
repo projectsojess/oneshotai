@@ -44,7 +44,7 @@ export async function updateSession(request: NextRequest) {
 
   if(!user && !(isApiAuthRoute || isPublicRoutes || isAuthRoutes || isWebhook)) {
     const url = request.nextUrl.clone();
-    url.pathname = '/auth/login';
+    url.pathname = '/login';
     return NextResponse.redirect(url);
   }
 
