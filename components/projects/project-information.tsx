@@ -13,15 +13,19 @@ import {
 import { PinnedItemsSkeleton } from '../skeletons/projects/pinned-skeleton';
 import { FileAttachmentSkeleton } from '../skeletons/projects/files-skeleton';
 import { ProjectFileComponent } from './project-file';
+import axios from 'axios';
+import toast from 'react-hot-toast';
+import { INTERNAL_SERVER_ERROR_MESSAGE } from '@/constants/error-messages';
 
 interface ProjectInformationProps {
   projectId: string,
   pinnedItems: any[],
   itemsLoading: boolean,
   files: any[]
-  attachmentsLoading: boolean
+  attachmentsLoading: boolean,
+  handleUnpinMessage: (id: string) => void
 }
-const ProjectInformation = ({projectId, pinnedItems, itemsLoading, files, attachmentsLoading}: ProjectInformationProps) => {
+const ProjectInformation = ({ pinnedItems, itemsLoading, files, attachmentsLoading, handleUnpinMessage}: ProjectInformationProps) => {
 
   const [pinnedMessages, setPinnedMessages] = useState([]);
 
@@ -29,9 +33,25 @@ const ProjectInformation = ({projectId, pinnedItems, itemsLoading, files, attach
   const [copiedId, setCopiedId] = useState(null);
 
 
-  const handleUnpinMessage = (id) => {
-    setPinnedMessages(pinnedMessages.filter(message => message.id !== id));
-  };
+  const unPinMessage = async (id: string, project:boolean, chat:boolean)=> {
+
+    try {
+        const resp = await axios.put("/api/conversations/pinned",{
+          messageId : id,
+          project,
+          chat
+        });
+
+        const { data } = resp;
+
+        handleUnpinMessage(id)
+        toast.success(`Message unpinned successfully.`);
+        
+    } catch (error) {
+      
+      toast.error(error.response?.data?.message || INTERNAL_SERVER_ERROR_MESSAGE)
+    }
+  }
 
   const getItemIcon = (type) => {
     switch(type) {
@@ -124,6 +144,7 @@ const ProjectInformation = ({projectId, pinnedItems, itemsLoading, files, attach
                                 variant="ghost" 
                                 size="sm" 
                                 className=""
+                                onClick={() => unPinMessage(item.id, false, item.chat_pinned)}
                               >
                                 <X className="w-4 h-4" />
                               </Button>

@@ -77,6 +77,10 @@ const ProjectPage = ({params} : {params : {projectId: string}}) => {
     
         getAllFiles();
       },[])
+
+      const handleUnpinMessage = (id) => {
+        setPinnedItems(pinnedItems.filter(message => message.id !== id));
+      };
     return (
       <div className="container mx-auto p-4">
           <div className="mb-8">
@@ -96,6 +100,7 @@ const ProjectPage = ({params} : {params : {projectId: string}}) => {
             itemsLoading={itemsLoading}
             files={files}
             attachmentsLoading={attachmentsLoading}
+            handleUnpinMessage={handleUnpinMessage}
           />
         </div>
 
@@ -116,6 +121,7 @@ const ProjectPage = ({params} : {params : {projectId: string}}) => {
                    itemsLoading={itemsLoading}
                    files={files}
                    attachmentsLoading={attachmentsLoading}
+                   handleUnpinMessage={handleUnpinMessage}
             />
           </div>
         </div>

@@ -137,6 +137,7 @@ const unPinMessage = async (id: string, chat:boolean, project:boolean)=> {
     try {
         const resp = await axios.put("/api/conversations/pinned",{
           messageId : id,
+          project,
           chat
         });
 
