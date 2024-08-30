@@ -80,7 +80,7 @@ const ProjectDialog = () => {
                   <FormControl>
                     <Textarea 
                     {...field} 
-                    placeholder="Enter project description" 
+                    placeholder="Provide context and instructions to models. Eg: You are a seasoned data scientist at a Fortune 500 company." 
                     disabled={isSubmitting} 
                     className=" p-6 "
                     onChange={(e) => {

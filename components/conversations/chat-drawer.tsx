@@ -20,7 +20,7 @@ import { Badge } from '../ui/badge';
 import { useProModal } from '@/hooks/use-pro-modal';
 import { ProjectFileComponent } from '../projects/project-file';
 
-const ChatDrawer = ({pinnedItems,plan, attachments } : {pinnedItems: any[],plan: string, attachments:any[]}) => {
+const ChatDrawer = ({pinnedItems,plan, attachments, unpinMessage } : {pinnedItems: any[],plan: string, attachments:any[], unpinMessage: (id: string, chat:boolean, project:boolean) => void}) => {
   const [activeTab, setActiveTab] = useState('pinned');
   const [copiedId, setCopiedId] = useState(null);
   const promodal = useProModal();
@@ -55,13 +55,14 @@ const ChatDrawer = ({pinnedItems,plan, attachments } : {pinnedItems: any[],plan:
     });
   };
 
+
   return (
     <TooltipProvider>
       <Drawer>
         <DrawerTrigger asChild>
           <Button
             variant="outline"
-            className="fixed right-6 bottom-20 z-40 rounded-full w-12 h-12 shadow-lg hover:shadow-xl transition-shadow duration-300 bg-gray-800 border-gray-700 text-gray-200"
+            className="fixed right-6 top-5 z-40 rounded-full w-12 h-12 shadow-lg hover:shadow-xl transition-shadow duration-300 bg-gray-800 border-gray-700 text-gray-200"
           >
             <Info />
           </Button>
@@ -138,6 +139,7 @@ const ChatDrawer = ({pinnedItems,plan, attachments } : {pinnedItems: any[],plan:
                                 variant="ghost" 
                                 size="sm" 
                                 className="text-gray-400 hover:text-gray-200 hover:bg-gray-700"
+                                onClick={() => unpinMessage(item.id, false, item.project_pinned)}
                               >
                                 <X className="w-4 h-4" />
                               </Button>

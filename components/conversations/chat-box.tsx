@@ -2,7 +2,6 @@
 import * as z from 'zod';
 import {  AudioLinesIcon, Copy, ImageIcon, MoreVertical, PinIcon, Send, User } from 'lucide-react';
 import React, { useEffect, useRef, useState } from 'react'
-import { Input } from '../ui/input';
 import { Button } from '../ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import axios from 'axios';
@@ -20,6 +19,7 @@ import { Plan } from '@/types/plan';
 import { getUserPlanClient } from '@/hooks/use-user';
 import { Badge } from '../ui/badge';
 import { useProModal } from '@/hooks/use-pro-modal';
+import { Textarea } from '../ui/textarea';
 
  
 interface Message {
@@ -104,6 +104,7 @@ const ChatBox = ({ chatId, openImageDialog, openAudioDialog,initializeProjectId}
       )
     );
   };
+
   const pinMessage = async (id: string, chat:boolean, project:boolean, updatePin: boolean)=> {
 
     if(plan.plan !=='PREMIUM'){
@@ -131,7 +132,25 @@ const ChatBox = ({ chatId, openImageDialog, openAudioDialog,initializeProjectId}
       toast.error(error.response?.data?.message || INTERNAL_SERVER_ERROR_MESSAGE)
     }
   }
+const unPinMessage = async (id: string, chat:boolean, project:boolean)=> {
 
+    try {
+        const resp = await axios.put("/api/conversations/pinned",{
+          messageId : id,
+          chat
+        });
+
+        const { data } = resp;
+
+        removePinnedItem(id);
+        updateMessagePinnedStatus(id,chat,project);
+        toast.success(`Message unpinned successfully.`);
+        
+    } catch (error) {
+      
+      toast.error(error.response?.data?.message || INTERNAL_SERVER_ERROR_MESSAGE)
+    }
+  }
   const form = useForm<z.infer<typeof ChatPromptSchema>>({
     resolver: zodResolver(ChatPromptSchema),
     defaultValues: {
@@ -284,7 +303,7 @@ const ChatBox = ({ chatId, openImageDialog, openAudioDialog,initializeProjectId}
             </div>
           ))}
           <div ref={messagesEndRef} />
-          <ChatDrawer pinnedItems={pinnedItems} plan={plan?.plan} attachments={files}/>
+          <ChatDrawer pinnedItems={pinnedItems} plan={plan?.plan} attachments={files} unpinMessage={unPinMessage}/>
         </div>
         <div className="p-4 border-t bg-gray-100">
           <Form {...form}>
@@ -294,11 +313,11 @@ const ChatBox = ({ chatId, openImageDialog, openAudioDialog,initializeProjectId}
                 render={({ field }) => (
                   <FormItem className="flex-grow">
                     <FormControl>
-                      <Input
-
-                        className="w-full"
+                    <Textarea
+                        className="w-full min-h-[100px] max-h-[200px] overflow-y-auto  transition-all duration-200 ease-in-out"
                         disabled={isLoading}
                         placeholder="Type your message..."
+                        rows={1}
                         {...field}
                       />
                     </FormControl>
