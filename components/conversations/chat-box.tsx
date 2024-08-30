@@ -125,7 +125,7 @@ const ChatBox = ({ chatId, openImageDialog, openAudioDialog,initializeProjectId}
           addPinnedItem(data.pinnedItem);
         }
         updateMessagePinnedStatus(id,chat,project);
-        toast.success(`Message pinned successfully.`);
+        toast.success(`Message pinned ${updatePin ? 'to chat' : 'to project'} successfully.`);
         
     } catch (error) {
       
