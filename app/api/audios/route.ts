@@ -1,6 +1,7 @@
 import { INTERNAL_SERVER_ERROR_MESSAGE, INVALID_REQUEST } from "@/constants/error-messages";
 import { getUserServer } from "@/hooks/use-current-user";
 import { logger } from "@/logger/logger";
+import { getAvailableStorage, updateUserStorage } from "@/utils/credit-utils";
 import { createServer } from "@/utils/supabase/server";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -19,6 +20,14 @@ export async function POST(request: NextRequest) {
         const buffer = Buffer.from(base64,'base64');
         const fileSizeInBytes = buffer.length;
 
+        const availableStorage = await getAvailableStorage();
+        if(availableStorage < fileSizeInBytes){
+    
+          return NextResponse.json({
+            message: 'Unable to save image. Not enough storage.'
+          }, { status: 401 });
+        }
+        
         const filename = `AUDIO_${new Date()}.mp3`;
         const path = `${user.id}/AUDIOS/${filename}`;
 
@@ -55,6 +64,11 @@ export async function POST(request: NextRequest) {
             }, {status:500});
         }
 
+
+    const newAvailableStorage = availableStorage - fileSizeInBytes;
+
+    await updateUserStorage(newAvailableStorage,fileSizeInBytes);
+    
         return NextResponse.json({
             message: 'Saved Audio Successfully'
         }, {status:200});
