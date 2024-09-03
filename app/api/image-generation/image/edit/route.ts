@@ -75,7 +75,7 @@ export async function  PUT(request: NextRequest) {
         }
 
 
-        if(process.env.NODE_ENV === 'production') {
+        if(process.env.NODE_ENV === 'development') {
 
             const bearer = `Bearer ${process.env.STABLE_DIFFUSION_API_KEY}`;
             const url = STABLE_DIFFUSION_ENDPOINTS[model as keyof typeof STABLE_DIFFUSION_ENDPOINTS];
@@ -110,7 +110,7 @@ export async function  PUT(request: NextRequest) {
                   },
                 },
               );
-    
+              console.log(response);
               imgBase64s = [{
                 id:'',
                 base64: response.data.image
@@ -121,8 +121,8 @@ export async function  PUT(request: NextRequest) {
         }
         
         const newAvailableCredits = available_credits - cost;
-        updateUserCredits(newAvailableCredits,cost);
-        
+        // updateUserCredits(newAvailableCredits,cost);
+        console.log(imgBase64s);
         return NextResponse.json({
             urls:  imgBase64s,
         }, {status:200});

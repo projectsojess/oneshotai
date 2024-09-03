@@ -10,6 +10,7 @@ export const STABLE_DIFFUSION_ENDPOINTS = {
     'sd-edit-inpaint': 'https://api.stability.ai/v2beta/stable-image/edit/inpaint',
     'sd-edit-outpaint': 'https://api.stability.ai/v2beta/stable-image/edit/outpaint',
     'sd-edit-sr':'https://api.stability.ai/v2beta/stable-image/edit/search-and-replace',
+    'sd-edit-src': 'https://api.stability.ai/v2beta/stable-image/edit/search-and-recolor',
     'sd-edit-rm-bg':'https://api.stability.ai/v2beta/stable-image/edit/remove-background'
 }
 

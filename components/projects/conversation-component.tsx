@@ -11,9 +11,10 @@ import ConversationCardSkeleton from "../skeletons/projects/conversation-skeleto
 import { formatDate } from "@/utils/date-time-formatter";
 import { useRouter } from "next/navigation";
 interface ConversationComponentProps {
-  projectId: string
+  projectId: string,
+  description: string
 }
-const ConversationComponent = ({ projectId }: ConversationComponentProps) => {
+const ConversationComponent = ({ projectId, description }: ConversationComponentProps) => {
   const [models, setModels ] = useState([]);
   const [modelsLoading, setModelsLoading ] = useState(true);
   const [chatsLoading, setChatsLoading] = useState(true);
@@ -67,7 +68,7 @@ const ConversationComponent = ({ projectId }: ConversationComponentProps) => {
         </CardTitle>
       </CardHeader>
       <CardContent className="p-0">
-        <PromptInput models={models} projectId={projectId}/>
+        <PromptInput models={models} projectId={projectId} description={description}/>
         <div className="mt-14 flex ml-7 text-xl">
             <History className="w-6 h-6 mr-2" /> Recent Conversations
         </div>

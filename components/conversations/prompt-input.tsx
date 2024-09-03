@@ -19,9 +19,10 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { Textarea } from '@/components/ui/textarea';
 interface PromptInputProps {
   models: any[],
-  projectId?: string
+  projectId?: string,
+  description: string
 }
-const PromptInput = ({  models,projectId } : PromptInputProps) => {
+const PromptInput = ({  models,projectId,description } : PromptInputProps) => {
   const router = useRouter();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
@@ -65,6 +66,7 @@ const PromptInput = ({  models,projectId } : PromptInputProps) => {
       const model = models.find( model => model.value === values.model);
       const resp = await axios.post("/api/conversations", {
         values,
+        description,
         projectId,
         icon: model.icon
       });

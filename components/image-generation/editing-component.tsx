@@ -327,18 +327,18 @@ const EditImageComponent = ({ models } :  { models: { value: string; name: strin
         <div className="mt-8">
           <h3 className="text-xl font-semibold mb-4 text-white">Generated Images</h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-6">
-            {generatedImages.map((base64: any, index) => (
+            {generatedImages.map((item: any, index) => (
               <div key={index} className="relative group">
                 <div className="relative overflow-hidden rounded-lg shadow-md">
                   <img
-                    src={`data:image/png;base64,${base64}`}
+                    src={`data:image/png;base64,${item.base64}`}
                     alt={`Generated image ${index + 1}`}
                     className="w-full h-auto object-cover transition-transform duration-300 group-hover:scale-110"
                   />
                 </div>
                 <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                   <Button
-                    onClick={() => handleDownload(base64, index)}
+                    onClick={() => handleDownload(item.base64, index)}
                     disabled={isDownloading === index}
                     className="bg-red-500 text-black hover:bg-red-700 transition-colors duration-300 text-white"
                   >

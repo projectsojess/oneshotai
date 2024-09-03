@@ -89,7 +89,7 @@ const ProjectPage = ({params} : {params : {projectId: string}}) => {
           
           <div className="flex flex-col lg:flex-row gap-8">
             <div className="lg:w-2/3">
-            <ConversationComponent projectId={params.projectId}/>
+            <ConversationComponent projectId={params.projectId} description={project.description}/>
             </div>
 
         {/* Project Information for larger screens */}
